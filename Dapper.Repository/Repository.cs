@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Dapper.Repository
@@ -16,11 +18,10 @@ namespace Dapper.Repository
         protected readonly DbContext Context;
         protected readonly ILogger Logger;
 
-
-        public Repository(DbContext context, ILogger logger = null)
+        public Repository(DbContext context)
         {
             Context = context;
-            Logger = logger;
+            Logger = context.Logger;
         }
 
         public async virtual Task<TModel> GetAsync(TKey id, IDbTransaction txn = null)
@@ -28,7 +29,7 @@ namespace Dapper.Repository
             var cn = Context.GetConnection();
             var sql = SqlBuilder.Get<TModel>(nameof(IModel<TKey>.Id), Context.StartDelimiter, Context.EndDelimiter);
 
-            var result = default(TModel);
+            TModel result;
 
             try
             {
@@ -36,14 +37,15 @@ namespace Dapper.Repository
             }
             catch (Exception exc)
             {
-                Logger?.LogError(exc, $"{nameof(GetAsync)}: {exc.Message}");
-                throw new SqlException(exc.Message, sql, new { id });
+                var sqlExc = GetSqlException(exc, sql, new { id });
+                throw sqlExc;
             }
             
             var allow = await AllowGetAsync(cn, result, txn);
             if (!allow.result) throw new PermissionException($"Get permission was denied: {allow.message}");
 
             await GetRelatedAsync(cn, result, txn);
+
             return result;       
         }
 
@@ -73,10 +75,10 @@ namespace Dapper.Repository
             }
             catch (Exception exc)
             {
-                Logger?.LogError(exc, $"{nameof(SaveAsync)}: {exc.Message}");
-                throw new SqlException(exc.Message, sql, model);
+                var sqlExc = GetSqlException(exc, sql, model);
+                throw sqlExc;
             }
-                
+
             if (action == SaveAction.Insert) model.Id = result;
 
             await AfterSaveAsync(cn, action, model, txn);
@@ -101,10 +103,10 @@ namespace Dapper.Repository
             }
             catch (Exception exc)
             {
-                Logger?.LogError(exc, $"{nameof(DeleteAsync)}: {exc.Message}");
-                throw new SqlException(exc.Message, sql, model);
+                var sqlExc = GetSqlException(exc, sql, model);
+                throw sqlExc;
             }
-            
+
             await AfterDeleteAsync(cn, model, txn);
         }
 
@@ -120,6 +122,19 @@ namespace Dapper.Repository
 
         private bool IsNew(TModel model) => model.Id.Equals(default);
 
-        private SaveAction GetSaveAction(TModel model) => IsNew(model) ? SaveAction.Insert : SaveAction.Update;        
+        private SaveAction GetSaveAction(TModel model) => IsNew(model) ? SaveAction.Insert : SaveAction.Update;
+
+        private SqlException GetSqlException(Exception exception, string sql, object model, [CallerMemberName] string methodName = null)
+        {
+            Logger?.LogError(exception, JsonSerializer.Serialize(new
+            {
+                message = exception.Message,
+                sql = sql,
+                parameters = model,
+                methodName
+            }));
+
+            return new SqlException(exception.Message, sql, model);
+        }
     }
 }
