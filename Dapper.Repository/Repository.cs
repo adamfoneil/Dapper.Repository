@@ -1,35 +1,51 @@
 ﻿using AO.Models.Enums;
 using AO.Models.Interfaces;
 using AO.Models.Static;
+using Dapper.Repository.Exceptions;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Threading.Tasks;
 
-namespace Dapper.Repository.Abstract
+namespace Dapper.Repository
 {
-    public class Repository<TModel, TKey> where TModel : IModel<TKey>
+    public partial class Repository<TModel, TKey> where TModel : IModel<TKey>
     {
-        private readonly DbContext _context;
+        protected readonly DbContext Context;
+        protected readonly ILogger Logger;
 
-        public Repository(DbContext context)
+
+        public Repository(DbContext context, ILogger logger = null)
         {
-            _context = context;
+            Context = context;
+            Logger = logger;
         }
 
         public async virtual Task<TModel> GetAsync(TKey id, IDbTransaction txn = null)
         {
-            var cn = _context.GetConnection();
-            var sql = SqlBuilder.Get<TModel>(nameof(IModel<TKey>.Id), _context.StartDelimiter, _context.EndDelimiter);
-            var result = await cn.QuerySingleOrDefaultAsync<TModel>(sql, new { id }, txn);
-            await GetRelatedAsync(cn, result, txn);
-            return result;
-        }
+            var cn = Context.GetConnection();
+            var sql = SqlBuilder.Get<TModel>(nameof(IModel<TKey>.Id), Context.StartDelimiter, Context.EndDelimiter);
 
-        /// <summary>
-        /// override this to populate "navigation properties" of your model row
-        /// </summary>
-        protected async virtual Task GetRelatedAsync(IDbConnection connection, TModel model, IDbTransaction txn = null) => await Task.CompletedTask;
+            var result = default(TModel);
+
+            try
+            {
+                result = await cn.QuerySingleOrDefaultAsync<TModel>(sql, new { id }, txn);
+            }
+            catch (Exception exc)
+            {
+                Logger?.LogError(exc, $"{nameof(GetAsync)}: {exc.Message}");
+                throw new SqlException(exc.Message, sql, new { id });
+            }
+            
+            var allow = await AllowGetAsync(cn, result, txn);
+            if (!allow.result) throw new PermissionException($"Get permission was denied: {allow.message}");
+
+            await GetRelatedAsync(cn, result, txn);
+            return result;       
+        }
 
         public async virtual Task<TModel> GetWhereAsync(object criteria, IDbTransaction txn = null)
         {
@@ -39,23 +55,57 @@ namespace Dapper.Repository.Abstract
         public async virtual Task<TModel> SaveAsync(TModel model, IEnumerable<string> columnNames = null, IDbTransaction txn = null)
         {
             var action = GetSaveAction(model);
-
+            
             var sql =
-                (action == SaveAction.Insert) ? SqlBuilder.Insert<TModel>(columnNames, _context.StartDelimiter, _context.EndDelimiter) + " " + _context.SelectIdentityCommand :
-                (action == SaveAction.Update) ? SqlBuilder.Update<TModel>(columnNames, _context.StartDelimiter, _context.EndDelimiter) :
+                (action == SaveAction.Insert) ? SqlBuilder.Insert<TModel>(columnNames, Context.StartDelimiter, Context.EndDelimiter) + " " + Context.SelectIdentityCommand :
+                (action == SaveAction.Update) ? SqlBuilder.Update<TModel>(columnNames, Context.StartDelimiter, Context.EndDelimiter) :
                 throw new Exception($"Unrecognized save action: {action}");
 
-            var cn = _context.GetConnection();            
-            var result = await cn.QuerySingleOrDefaultAsync<TKey>(sql, model, txn);
+            var cn = Context.GetConnection();
+            var validation = await ValidateAsync(cn, model, txn);
+            if (!validation.result) throw new ValidationException(validation.message);
 
+            var result = default(TKey);
+
+            try
+            {
+                result = await cn.QuerySingleOrDefaultAsync<TKey>(sql, model, txn);
+            }
+            catch (Exception exc)
+            {
+                Logger?.LogError(exc, $"{nameof(SaveAsync)}: {exc.Message}");
+                throw new SqlException(exc.Message, sql, model);
+            }
+                
             if (action == SaveAction.Insert) model.Id = result;
+
+            await AfterSaveAsync(cn, action, model, txn);
 
             return model;
         }
         
-        public async virtual Task DeleteAsync(TModel model) 
+        public async virtual Task DeleteAsync(TModel model, IDbTransaction txn = null) 
         {
+            var cn = Context.GetConnection();
 
+            var allow = await AllowDeleteAsync(cn, model, txn);
+            if (!allow.result) throw new PermissionException($"Delete permission was denied: {allow.message}");
+
+            await BeforeDeleteAsync(cn, model, txn);
+
+            var sql = SqlBuilder.Delete<TModel>(Context.StartDelimiter, Context.EndDelimiter);
+
+            try
+            {
+                await cn.ExecuteAsync(sql, new { id = model.Id }, txn);
+            }
+            catch (Exception exc)
+            {
+                Logger?.LogError(exc, $"{nameof(DeleteAsync)}: {exc.Message}");
+                throw new SqlException(exc.Message, sql, model);
+            }
+            
+            await AfterDeleteAsync(cn, model, txn);
         }
 
         public async virtual Task<TKey> MergeAsync(TModel model)
@@ -66,10 +116,10 @@ namespace Dapper.Repository.Abstract
             }
 
             throw new NotImplementedException();
-        }
+        }        
 
         private bool IsNew(TModel model) => model.Id.Equals(default);
 
-        private SaveAction GetSaveAction(TModel model) => IsNew(model) ? SaveAction.Insert : SaveAction.Update;
+        private SaveAction GetSaveAction(TModel model) => IsNew(model) ? SaveAction.Insert : SaveAction.Update;        
     }
 }

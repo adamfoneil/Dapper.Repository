@@ -8,10 +8,14 @@
 
   <ItemGroup>
     <Compile Include="..\Dapper.Repository\DbContext.cs" Link="Shared\DbContext.cs" />
+    <Compile Include="..\Dapper.Repository\Exceptions\PermissionException.cs" Link="Exceptions\PermissionException.cs" />
+    <Compile Include="..\Dapper.Repository\Exceptions\SqlException.cs" Link="Exceptions\SqlException.cs" />
     <Compile Include="..\Dapper.Repository\Repository.cs" Link="Shared\Repository.cs" />
+    <Compile Include="..\Dapper.Repository\Repository_virtuals.cs" Link="Shared\Repository_virtuals.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Exceptions\" />
     <Folder Include="Shared\" />
   </ItemGroup>
 
@@ -19,6 +23,7 @@
     <PackageReference Include="AO.Models" Version="1.1.39" />
     <PackageReference Include="Dapper" Version="2.0.90" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="3.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
   </ItemGroup>
 
 </Project>

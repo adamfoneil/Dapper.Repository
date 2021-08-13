@@ -19,7 +19,6 @@ namespace Dapper.Repository.SqlServer
 
         public override string SelectIdentityCommand => "SELECT SCOPE_IDENTITY();";
 
-        public override IDbConnection GetConnection() => new SqlConnection(_connectionString);
-        
+        public override IDbConnection GetConnection() => new SqlConnection(_connectionString);        
     }
 }
