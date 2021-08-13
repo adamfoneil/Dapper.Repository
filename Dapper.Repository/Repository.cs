@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Dapper.Repository.Abstract
 {
-    public abstract class Repository<TModel, TKey> where TModel : IModel<TKey>
+    public class Repository<TModel, TKey> where TModel : IModel<TKey>
     {
         private readonly DbContext _context;
 
