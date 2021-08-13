@@ -8,48 +8,68 @@ using System.Threading.Tasks;
 
 namespace Dapper.Repository.Abstract
 {
-    public abstract class Repository<TKey>
+    public abstract class Repository<TModel, TKey> where TModel : IModel<TKey>
     {
-        protected abstract IDbConnection GetConnection();
-        protected abstract char StartDelimiter { get; }
-        protected abstract char EndDelimiter { get; }
-        protected abstract string SelectIdentityCommand { get; }
+        private readonly DbContext _context;
 
-        public async Task<TModel> GetAsync<TModel>(TKey id, IUserBase user = null, IDbTransaction txn = null) where TModel : IModel<TKey>
+        public Repository(DbContext context)
         {
-            var cn = GetConnection();
-            var sql = SqlBuilder.Get<TModel>(nameof(IModel<TKey>.Id), StartDelimiter, EndDelimiter);
-            return await cn.QuerySingleOrDefaultAsync<TModel>(sql, new { id }, txn);
+            _context = context;
         }
 
-        public async Task<TModel> GetWhereAsync<TModel>(object criteria, IUserBase user = null, IDbTransaction txn = null) where TModel : IModel<TKey>
+        public async virtual Task<TModel> GetAsync(TKey id, IDbTransaction txn = null)
+        {
+            var cn = _context.GetConnection();
+            var sql = SqlBuilder.Get<TModel>(nameof(IModel<TKey>.Id), _context.StartDelimiter, _context.EndDelimiter);
+            var result = await cn.QuerySingleOrDefaultAsync<TModel>(sql, new { id }, txn);
+            await GetRelatedAsync(cn, result, txn);
+            return result;
+        }
+
+        /// <summary>
+        /// override this to populate "navigation properties" of your model row
+        /// </summary>
+        protected async virtual Task GetRelatedAsync(IDbConnection connection, TModel model, IDbTransaction txn = null) => await Task.CompletedTask;
+
+        public async virtual Task<TModel> GetWhereAsync(object criteria, IDbTransaction txn = null)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<TModel> SaveAsync<TModel>(TModel model, IEnumerable<string> columnNames = null, IUserBase user = null, IDbTransaction txn = null) where TModel : IModel<TKey>
+        public async virtual Task<TModel> SaveAsync(TModel model, IEnumerable<string> columnNames = null, IDbTransaction txn = null)
         {
-            var action = IsInsert(model) ? SaveAction.Insert : SaveAction.Update;
+            var action = GetSaveAction(model);
 
             var sql =
-                (action == SaveAction.Insert) ? SqlBuilder.Insert<TModel>(columnNames, StartDelimiter, EndDelimiter) + " " + SelectIdentityCommand :
-                (action == SaveAction.Update) ? SqlBuilder.Update<TModel>(columnNames, StartDelimiter, EndDelimiter) :
+                (action == SaveAction.Insert) ? SqlBuilder.Insert<TModel>(columnNames, _context.StartDelimiter, _context.EndDelimiter) + " " + _context.SelectIdentityCommand :
+                (action == SaveAction.Update) ? SqlBuilder.Update<TModel>(columnNames, _context.StartDelimiter, _context.EndDelimiter) :
                 throw new Exception($"Unrecognized save action: {action}");
 
-            var cn = GetConnection();
+            var cn = _context.GetConnection();            
             var result = await cn.QuerySingleOrDefaultAsync<TKey>(sql, model, txn);
 
             if (action == SaveAction.Insert) model.Id = result;
 
             return model;
         }
-
-        private bool IsInsert<TModel>(TModel model) where TModel : IModel<TKey> => model.Id.Equals(default);
         
-
-        public async Task DeleteAsync<TModel>(TModel model, string userName = null) where TModel : IModel<TKey>
+        public async virtual Task DeleteAsync(TModel model) 
         {
 
         }
+
+        public async virtual Task<TKey> MergeAsync(TModel model)
+        {
+            if (IsNew(model))
+            {
+
+            }
+
+            throw new NotImplementedException();
+        }
+
+        private bool IsNew(TModel model) => model.Id.Equals(default);
+
+        private SaveAction GetSaveAction(TModel model) => IsNew(model) ? SaveAction.Insert : SaveAction.Update;
     }
 }

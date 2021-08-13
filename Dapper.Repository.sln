@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31515.178
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dapper.Repository", "Dapper.Repository\Dapper.Repository.csproj", "{29506F0B-6FFA-4F7E-A78E-4333CE34FA4C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dapper.Repository", "Dapper.Repository\Dapper.Repository.csproj", "{29506F0B-6FFA-4F7E-A78E-4333CE34FA4C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dapper.Repository.SqlServer", "Dapper.Repository.SqlServer\Dapper.Repository.SqlServer.csproj", "{3F86BF4E-E4E7-4FAE-A0AA-1DF2F755ED51}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{29506F0B-6FFA-4F7E-A78E-4333CE34FA4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{29506F0B-6FFA-4F7E-A78E-4333CE34FA4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{29506F0B-6FFA-4F7E-A78E-4333CE34FA4C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F86BF4E-E4E7-4FAE-A0AA-1DF2F755ED51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F86BF4E-E4E7-4FAE-A0AA-1DF2F755ED51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F86BF4E-E4E7-4FAE-A0AA-1DF2F755ED51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F86BF4E-E4E7-4FAE-A0AA-1DF2F755ED51}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
