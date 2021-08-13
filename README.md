@@ -5,9 +5,9 @@ The idea now will be to write data access code like this:
 ```csharp
 public class SomeController : Controller
 {
-    private readonly Context _context;
+    private readonly SqlServerContext _context;
     
-    public SomeController(Context context)
+    public SomeController(SqlServerContext context)
     {
         _context = context;
     }
