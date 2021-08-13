@@ -27,6 +27,7 @@ public class SomeController : Controller
 ```
 ## Architecture
 - [DbContext](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/DbContext.cs) provides the low-level connection infrastracture and some SQL dialect options. This will provide the basis for database-specific implementations, namely [SqlServerContext](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/SqlServerContext.cs). This is what you'd inherit from in your project. Note, this is not to be confused with Entity Framework's DbContext object.
+- Your model classes must implement [IModel&lt;TKey&gt;](https://github.com/adamfoneil/Models/blob/master/Models/Interfaces/IModel.cs), from [AO.Models](https://www.nuget.org/packages/AO.Models/1.1.39).
 - [Repository](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/Repository.cs) provides CRUD methods like Get, Save, Delete, Merge, and so on. You'd inherit from this in your project, typically creating a base repository that implements your conventions (say, around auditing, timestamps, and such).
 - Your `DbContext` would have repositories added that represent access to each table in your database.
 
