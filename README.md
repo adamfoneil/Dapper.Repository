@@ -42,7 +42,8 @@ public class EmployeeRepository : BaseRepository<Employee, int>
 {
 }
 
-// lastly, create a context object that provides access to all your repositories
+// lastly, create a context object that provides access to all your repositories.
+// this is what you'd inject in your IoC container and access throughout your application
 public MyContext : SqlServerContext
 {
     public MyContext(string connectionString, IUserBase user) : base(connectionstring, user)
