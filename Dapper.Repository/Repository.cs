@@ -37,9 +37,11 @@ namespace Dapper.Repository.Abstract
                 throw new Exception($"Unrecognized save action: {action}");
 
             var cn = GetConnection();
-            var result = await cn.QuerySingleOrDefaultAsync<TModel>(sql, model, txn);
+            var result = await cn.QuerySingleOrDefaultAsync<TKey>(sql, model, txn);
 
-            throw new NotImplementedException();
+            if (action == SaveAction.Insert) model.Id = result;
+
+            return model;
         }
 
         private bool IsInsert<TModel>(TModel model) where TModel : IModel<TKey> => model.Id.Equals(default);
