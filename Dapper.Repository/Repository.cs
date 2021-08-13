@@ -34,7 +34,7 @@ namespace Dapper.Repository.Abstract
             var sql =
                 (action == SaveAction.Insert) ? SqlBuilder.Insert<TModel>(columnNames, StartDelimiter, EndDelimiter) + " " + SelectIdentityCommand :
                 (action == SaveAction.Update) ? SqlBuilder.Update<TModel>(columnNames, StartDelimiter, EndDelimiter) :
-                throw new System.Exception($"Unrecognized save action: {action}");
+                throw new Exception($"Unrecognized save action: {action}");
 
             var cn = GetConnection();
             var result = await cn.QuerySingleOrDefaultAsync<TModel>(sql, model, txn);
