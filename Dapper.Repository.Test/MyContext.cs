@@ -38,7 +38,7 @@ namespace Dapper.Repository.Test
         {
         }
 
-        protected new async Task BeforeSaveAsync(IDbConnection connection, SaveAction action, TModel model, IDbTransaction txn = null)
+        protected override async Task BeforeSaveAsync(IDbConnection connection, SaveAction action, TModel model, IDbTransaction txn = null)
         {
             if (model is BaseTable baseTable)
             {
@@ -66,7 +66,7 @@ namespace Dapper.Repository.Test
         {
         }
 
-        protected new async Task<(bool result, string message)> ValidateAsync(IDbConnection connection, WorkHours model, IDbTransaction txn = null)
+        protected override async Task<(bool result, string message)> ValidateAsync(IDbConnection connection, WorkHours model, IDbTransaction txn = null)
         {
             await Task.CompletedTask;
 

@@ -29,7 +29,7 @@ namespace Dapper.Repository
         public async virtual Task<TModel> GetAsync(TKey id, IDbTransaction txn = null)
         {
             var sql = SqlBuilder.Get<TModel>(nameof(IModel<TKey>.Id), Context.StartDelimiter, Context.EndDelimiter);
-            return await GetInnerAsync(sql, id, txn);
+            return await GetInnerAsync(sql, new { id }, txn);
         }
 
         public async virtual Task<TModel> GetWhereAsync(object criteria, IDbTransaction txn = null)
@@ -114,7 +114,7 @@ namespace Dapper.Repository
                 return attr != null;
             });
 
-        private bool IsNew(TModel model) => model.Id.Equals(default);
+        private bool IsNew(TModel model) => model.Id.Equals(default(TKey));
 
         private SaveAction GetSaveAction(TModel model) => IsNew(model) ? SaveAction.Insert : SaveAction.Update;
 

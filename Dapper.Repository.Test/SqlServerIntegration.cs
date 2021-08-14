@@ -1,4 +1,5 @@
 using BlazorAO.Models;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ModelSync.Models;
 using SqlServer.LocalDb;
@@ -25,9 +26,29 @@ namespace Dapper.Repository.Test
             }            
         }
 
-        [TestMethod]
-        public void TestMethod1()
+        private MyContext GetContext()
         {
+            var logger = LoggerFactory.Create(config => config.AddDebug()).CreateLogger("Testing");
+            return new MyContext(logger);
+        }
+
+        [TestMethod]
+        public async Task SaveAndDeleteWorkspace()
+        {
+            var context = GetContext();
+
+            var ws = await context.Workspaces.SaveAsync(new Workspace()
+            {
+                Name = "sample workspace"
+            });
+
+            ws.StorageContainer = "whatever";
+            await context.Workspaces.SaveAsync(ws);
+
+            ws = await context.Workspaces.GetAsync(ws.Id);
+            Assert.IsTrue(ws.StorageContainer.Equals("whatever"));
+
+            await context.Workspaces.DeleteAsync(ws);
         }
     }
 }
