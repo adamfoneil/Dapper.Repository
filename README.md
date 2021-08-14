@@ -26,7 +26,7 @@ public class SomeController : Controller
     }
 }
 ```
-The integration tests provide examples that give more context:
+The [integration tests](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/SqlServerIntegration.cs) provide examples that give more context:
 
 0. Before you start, you should already have a number of model classes. My tests work with these [examples](https://github.com/adamfoneil/Dapper.Repository/tree/master/Dapper.Repository.Test.Models). 
 1. Create a class based on `SqlServerContext` that will provide the access point to all your repositories. Example: [MyContext](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/MyContext.cs). Your context object gets an `ILogger` as well as info about the current user and your database connection string.
