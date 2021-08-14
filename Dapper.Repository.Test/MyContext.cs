@@ -18,7 +18,8 @@ namespace Dapper.Repository.Test
         public BaseRepository<Client> Clients => new BaseRepository<Client>(this);
         public BaseRepository<Job> Jobs => new BaseRepository<Job>(this);
         public BaseRepository<Budget> Budgets => new BaseRepository<Budget>(this);
-        public WorkHoursRepository WorkHours => new WorkHoursRepository(this); // gets its own repo because it has unique validation
+        
+        // gets its own repo because it has unique validation
+        public WorkHoursRepository WorkHours => new WorkHoursRepository(this); 
     }
-
 }
