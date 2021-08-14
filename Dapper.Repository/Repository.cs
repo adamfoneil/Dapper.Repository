@@ -51,6 +51,8 @@ namespace Dapper.Repository
             var validation = await ValidateAsync(cn, model, txn);
             if (!validation.result) throw new ValidationException(validation.message);
 
+            await BeforeSaveAsync(cn, action, model);
+
             TKey result;
             try
             {

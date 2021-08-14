@@ -29,6 +29,5 @@ namespace Dapper.Repository.Test
         public void TestMethod1()
         {
         }
-    }    
-
+    }
 }

@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace BlazorAO.Models.Conventions
 {
-    public abstract class BaseTable : IModel<int>, IAudit
+    public abstract class BaseTable : IModel<int>
     {
         public int Id { get; set; }
 
@@ -24,21 +24,5 @@ namespace BlazorAO.Models.Conventions
 
         [SaveAction(SaveAction.Update)]
         public DateTime? DateModified { get; set; }
-
-        public void Stamp(SaveAction saveAction, IUserBase user)
-        {
-            switch (saveAction)
-            {
-                case SaveAction.Insert:
-                    CreatedBy = user.Name;
-                    DateCreated = user.LocalTime;
-                    break;
-
-                case SaveAction.Update:
-                    ModifiedBy = user.Name;
-                    DateModified = user.LocalTime;
-                    break;
-            }
-        }
     }
 }

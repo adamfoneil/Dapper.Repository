@@ -38,10 +38,12 @@ namespace Dapper.Repository
             return (true, null);
         }
 
+        protected async virtual Task BeforeSaveAsync(IDbConnection connection, SaveAction action, TModel model, IDbTransaction txn = null) => await Task.CompletedTask;
+
         protected async virtual Task AfterSaveAsync(IDbConnection connection, SaveAction action, TModel model, IDbTransaction txn = null) => await Task.CompletedTask;
 
-        protected async virtual Task BeforeDeleteAsync(IDbConnection connection, TModel model, IDbTransaction txn) => await Task.CompletedTask;
+        protected async virtual Task BeforeDeleteAsync(IDbConnection connection, TModel model, IDbTransaction txn = null) => await Task.CompletedTask;
 
-        protected async virtual Task AfterDeleteAsync(IDbConnection connection, TModel model, IDbTransaction txn) => await Task.CompletedTask;
+        protected async virtual Task AfterDeleteAsync(IDbConnection connection, TModel model, IDbTransaction txn = null) => await Task.CompletedTask;
     }
 }
