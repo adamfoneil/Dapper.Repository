@@ -29,6 +29,7 @@ namespace Dapper.Repository.Test
         public BaseRepository<Client> Clients => new BaseRepository<Client>(this);
         public BaseRepository<Job> Jobs => new BaseRepository<Job>(this);
         public BaseRepository<Budget> Budgets => new BaseRepository<Budget>(this);
+        public WorkHoursRepository WorkHours => new WorkHoursRepository(this); // gets its own repo because it has unique validation
     }
 
     public class BaseRepository<TModel> : Repository<TModel, int> where TModel : IModel<int>
@@ -57,5 +58,25 @@ namespace Dapper.Repository.Test
 
             await Task.CompletedTask;
         }
+    }
+
+    public class WorkHoursRepository : BaseRepository<WorkHours>
+    {
+        public WorkHoursRepository(SqlServerContext context) : base(context)
+        {
+        }
+
+        protected new async Task<(bool result, string message)> ValidateAsync(IDbConnection connection, WorkHours model, IDbTransaction txn = null)
+        {
+            await Task.CompletedTask;
+
+            if (model.Hours <= 0)
+            {                
+                return (false, "Hours must be greater than zero.");
+            }
+
+            return (true, null);
+        }
+
     }
 }
