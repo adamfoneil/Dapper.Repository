@@ -1,4 +1,4 @@
-![Build Status](https://ci.appveyor.com/api/projects/status/3opr5fvqudspcioh?svg=true)
+[![Build Status](https://ci.appveyor.com/api/projects/status/3opr5fvqudspcioh?svg=true)](https://ci.appveyor.com/project/adamosoftware/dapper-repository)
 [![Nuget](https://img.shields.io/nuget/v/AO.Dapper.Repository.SqlServer/)](https://www.nuget.org/packages/AO.Dapper.Repository.SqlServer/)
 
 This library lets you write data access code like this:
