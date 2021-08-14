@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Dapper.Repository
 {
-    public partial class Repository<TModel, TKey>
+    public partial class Repository<TUser, TModel, TKey>
     {
         /// <summary>
         /// override this to populate "navigation properties" of your model row

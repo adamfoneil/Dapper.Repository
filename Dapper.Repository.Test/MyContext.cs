@@ -6,7 +6,7 @@ using SqlServer.LocalDb;
 
 namespace Dapper.Repository.Test
 {
-    public class MyContext : SqlServerContext
+    public class MyContext : SqlServerContext<User>
     {
         public const string DbName = "DapperRepository";
 

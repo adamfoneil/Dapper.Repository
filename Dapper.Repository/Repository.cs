@@ -15,12 +15,12 @@ using System.Threading.Tasks;
 
 namespace Dapper.Repository
 {
-    public partial class Repository<TModel, TKey> where TModel : IModel<TKey>
+    public partial class Repository<TUser, TModel, TKey> where TModel : IModel<TKey> where TUser : IUserBase
     {
-        protected readonly DbContext Context;
+        protected readonly DbContext<TUser> Context;
         protected readonly ILogger Logger;
 
-        public Repository(DbContext context)
+        public Repository(DbContext<TUser> context)
         {
             Context = context;
             Logger = context.Logger;

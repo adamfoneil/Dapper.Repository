@@ -5,11 +5,11 @@ using System.Data;
 
 namespace Dapper.Repository.SqlServer
 {
-    public class SqlServerContext : DbContext
+    public class SqlServerContext<TUser> : DbContext<TUser> where TUser : IUserBase
     {
         private readonly string _connectionString;
 
-        public SqlServerContext(string connectionString, IUserBase user, ILogger logger) : base(user, logger)
+        public SqlServerContext(string connectionString, TUser user, ILogger logger) : base(user, logger)
         {
             _connectionString = connectionString;
         }

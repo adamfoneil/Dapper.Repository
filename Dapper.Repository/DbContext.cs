@@ -4,15 +4,15 @@ using System.Data;
 
 namespace Dapper.Repository
 {
-    public abstract class DbContext
+    public abstract class DbContext<TUser> where TUser : IUserBase
     {        
-        public DbContext(IUserBase user, ILogger logger)
+        public DbContext(TUser user, ILogger logger)
         {
             User = user;
             Logger = logger;
         }
 
-        public IUserBase User { get; }
+        public TUser User { get; }
         public ILogger Logger { get; }
         public abstract IDbConnection GetConnection();
         public abstract char StartDelimiter { get; }
