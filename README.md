@@ -1,3 +1,5 @@
+![img](https://ci.appveyor.com/api/projects/status/3opr5fvqudspcioh?svg=true)
+
 This library lets you write data access code like this:
 
 ```csharp
