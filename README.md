@@ -51,8 +51,11 @@ public MyContext : SqlServerContext
     {
     }
     
-    public BaseRepository<Appointment, int> Appointments => new BaseRepository<Appointment, int>(this); // assumes that the Appointment table has nothing special about it
-    public EmployeeRepository Employees => new EmployeeRepository(this); // special repository because for some reason it has special validation or other behavior
+    // assumes that the Appointment table has nothing special about it
+    public BaseRepository<Appointment, int> Appointments => new BaseRepository<Appointment, int>(this); 
+    
+    // special repository because for some reason it has special validation or other behavior
+    public EmployeeRepository Employees => new EmployeeRepository(this); 
 }
 ```
 
