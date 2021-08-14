@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
@@ -10,6 +10,7 @@
     <PackageProjectUrl>https://github.com/adamfoneil/Dapper.Repository</PackageProjectUrl>
     <RepositoryUrl>https://github.com/adamfoneil/Dapper.Repository</RepositoryUrl>
     <PackageTags>dapper sql-server crud repository-pattern</PackageTags>
+    <Description>A Dapper-based repository library targeting SQL Server and .NET 5</Description>
   </PropertyGroup>
 
   <ItemGroup>
