@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
@@ -11,8 +11,8 @@
     <RepositoryUrl>https://github.com/adamfoneil/Dapper.Repository</RepositoryUrl>
     <PackageTags>dapper sql-server crud repository-pattern</PackageTags>
     <Description>A Dapper-based repository library targeting SQL Server and .NET 5</Description>
-    <Version>1.0.1</Version>
-    <PackageReleaseNotes>TUser generic arg added to DbContext</PackageReleaseNotes>
+    <Version>1.0.2</Version>
+    <PackageReleaseNotes>Custom identity improvements</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,7 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AO.Models" Version="1.1.40" />
+    <PackageReference Include="AO.Models" Version="1.1.42" />
     <PackageReference Include="Dapper" Version="2.0.90" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="3.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />

@@ -1,9 +1,11 @@
+using AO.Models.Static;
 using BlazorAO.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ModelSync.Models;
 using SqlServer.LocalDb;
 using SqlServer.LocalDb.Extensions;
+using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -49,6 +51,34 @@ namespace Dapper.Repository.Test
             Assert.IsTrue(ws.StorageContainer.Equals("whatever"));
 
             await context.Workspaces.DeleteAsync(ws);
+        }
+
+        [TestMethod]
+        public async Task CustomIdentity()
+        {
+            var context = GetContext();
+
+            var insert = SqlBuilder.Insert<UserProfile>(new string[]
+            {
+                "Id", "UserName", "Email", "EmailConfirmed", "PhoneNumberConfirmed", "TwoFactorEnabled"
+            }) + " SELECT SCOPE_IDENTITY()";
+
+            const string email = "hello@nowhere.org";
+
+            using var cn = context.GetConnection();
+            var id = await cn.QuerySingleOrDefaultAsync<int>(insert, new UserProfile()
+            {
+                Id = Guid.NewGuid().ToString(),
+                UserName = "hello",
+                Email = email,
+                EmailConfirmed = true,
+                PhoneNumberConfirmed = false,
+                TwoFactorEnabled = false
+            });
+
+            var user = await context.Users.GetByUserIdAsync(id);
+
+            Assert.IsTrue(user.Email.Equals(email));
         }
     }
 }

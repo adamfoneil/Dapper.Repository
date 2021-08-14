@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace BlazorAO.Models
 {
-    public class UserProfile : UserProfileBase, ITenantUser<int>, IUserBaseWithRoles
+    public class UserProfile : UserProfileBase, ITenantUser<int>, IUserBaseWithRoles, IModel<string>
     {
         public int? WorkspaceId { get; set; }        
 

@@ -28,7 +28,7 @@ namespace Dapper.Repository
 
         public async virtual Task<TModel> GetAsync(TKey id, IDbTransaction txn = null)
         {
-            var sql = SqlBuilder.Get<TModel>(nameof(IModel<TKey>.Id), Context.StartDelimiter, Context.EndDelimiter);
+            var sql = SqlBuilder.Get<TModel>(Context.StartDelimiter, Context.EndDelimiter);
             return await GetInnerAsync(sql, new { id }, txn);
         }
 
@@ -63,7 +63,7 @@ namespace Dapper.Repository
                 throw GetSqlException(exc, sql, model);
             }
 
-            if (action == SaveAction.Insert) model.Id = result;
+            if (action == SaveAction.Insert) SetIdentity(result, model);
 
             await AfterSaveAsync(cn, action, model, txn);
 
@@ -114,7 +114,7 @@ namespace Dapper.Repository
                 return attr != null;
             });
 
-        private bool IsNew(TModel model) => model.Id.Equals(default(TKey));
+        protected virtual bool IsNew(TModel model) => model.Id.Equals(default(TKey));
 
         private SaveAction GetSaveAction(TModel model) => IsNew(model) ? SaveAction.Insert : SaveAction.Update;
 
