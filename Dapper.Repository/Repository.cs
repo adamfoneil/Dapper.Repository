@@ -25,33 +25,15 @@ namespace Dapper.Repository
         }
 
         public async virtual Task<TModel> GetAsync(TKey id, IDbTransaction txn = null)
-        {
-            var cn = Context.GetConnection();
+        {            
             var sql = SqlBuilder.Get<TModel>(nameof(IModel<TKey>.Id), Context.StartDelimiter, Context.EndDelimiter);
-
-            TModel result;
-
-            try
-            {
-                result = await cn.QuerySingleOrDefaultAsync<TModel>(sql, new { id }, txn);
-            }
-            catch (Exception exc)
-            {
-                var sqlExc = GetSqlException(exc, sql, new { id });
-                throw sqlExc;
-            }
-            
-            var allow = await AllowGetAsync(cn, result, txn);
-            if (!allow.result) throw new PermissionException($"Get permission was denied: {allow.message}");
-
-            await GetRelatedAsync(cn, result, txn);
-
-            return result;       
+            return await GetInnerAsync(sql, id, txn);
         }
 
         public async virtual Task<TModel> GetWhereAsync(object criteria, IDbTransaction txn = null)
         {
-            throw new NotImplementedException();
+            var sql = SqlBuilder.GetWhere<TModel>(criteria, Context.StartDelimiter, Context.EndDelimiter);
+            return await GetInnerAsync(sql, criteria, txn);
         }
 
         public async virtual Task<TModel> SaveAsync(TModel model, IEnumerable<string> columnNames = null, IDbTransaction txn = null)
@@ -67,16 +49,14 @@ namespace Dapper.Repository
             var validation = await ValidateAsync(cn, model, txn);
             if (!validation.result) throw new ValidationException(validation.message);
 
-            var result = default(TKey);
-
+            TKey result;
             try
             {
                 result = await cn.QuerySingleOrDefaultAsync<TKey>(sql, model, txn);
             }
             catch (Exception exc)
             {
-                var sqlExc = GetSqlException(exc, sql, model);
-                throw sqlExc;
+                throw GetSqlException(exc, sql, model);                
             }
 
             if (action == SaveAction.Insert) model.Id = result;
@@ -103,8 +83,7 @@ namespace Dapper.Repository
             }
             catch (Exception exc)
             {
-                var sqlExc = GetSqlException(exc, sql, model);
-                throw sqlExc;
+                throw GetSqlException(exc, sql, model);                
             }
 
             await AfterDeleteAsync(cn, model, txn);
@@ -135,6 +114,28 @@ namespace Dapper.Repository
             }));
 
             return new SqlException(exception.Message, sql, model);
+        }
+
+        private async Task<TModel> GetInnerAsync(string sql, object parameters, IDbTransaction txn = null)
+        {
+            var cn = Context.GetConnection();
+            TModel result;
+
+            try
+            {
+                result = await cn.QuerySingleOrDefaultAsync<TModel>(sql, parameters, txn);
+            }
+            catch (Exception exc)
+            {
+                throw GetSqlException(exc, sql, parameters);                
+            }
+
+            var allow = await AllowGetAsync(cn, result, txn);
+            if (!allow.result) throw new PermissionException($"Get permission was denied: {allow.message}");
+
+            await GetRelatedAsync(cn, result, txn);
+
+            return result;
         }
     }
 }
