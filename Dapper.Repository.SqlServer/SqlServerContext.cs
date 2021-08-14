@@ -1,5 +1,6 @@
 ﻿using AO.Models.Interfaces;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging;
 using System.Data;
 
 namespace Dapper.Repository.SqlServer
@@ -8,7 +9,7 @@ namespace Dapper.Repository.SqlServer
     {
         private readonly string _connectionString;
 
-        public SqlServerContext(string connectionString, IUserBase user) : base(user)
+        public SqlServerContext(string connectionString, IUserBase user, ILogger logger) : base(user, logger)
         {
             _connectionString = connectionString;
         }
