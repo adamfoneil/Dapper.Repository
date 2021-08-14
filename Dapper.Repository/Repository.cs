@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -25,7 +27,7 @@ namespace Dapper.Repository
         }
 
         public async virtual Task<TModel> GetAsync(TKey id, IDbTransaction txn = null)
-        {            
+        {
             var sql = SqlBuilder.Get<TModel>(nameof(IModel<TKey>.Id), Context.StartDelimiter, Context.EndDelimiter);
             return await GetInnerAsync(sql, id, txn);
         }
@@ -39,7 +41,7 @@ namespace Dapper.Repository
         public async virtual Task<TModel> SaveAsync(TModel model, IEnumerable<string> columnNames = null, IDbTransaction txn = null)
         {
             var action = GetSaveAction(model);
-            
+
             var sql =
                 (action == SaveAction.Insert) ? SqlBuilder.Insert<TModel>(columnNames, Context.StartDelimiter, Context.EndDelimiter) + " " + Context.SelectIdentityCommand :
                 (action == SaveAction.Update) ? SqlBuilder.Update<TModel>(columnNames, Context.StartDelimiter, Context.EndDelimiter) :
@@ -56,7 +58,7 @@ namespace Dapper.Repository
             }
             catch (Exception exc)
             {
-                throw GetSqlException(exc, sql, model);                
+                throw GetSqlException(exc, sql, model);
             }
 
             if (action == SaveAction.Insert) model.Id = result;
@@ -65,8 +67,8 @@ namespace Dapper.Repository
 
             return model;
         }
-        
-        public async virtual Task DeleteAsync(TModel model, IDbTransaction txn = null) 
+
+        public async virtual Task DeleteAsync(TModel model, IDbTransaction txn = null)
         {
             var cn = Context.GetConnection();
 
@@ -83,21 +85,32 @@ namespace Dapper.Repository
             }
             catch (Exception exc)
             {
-                throw GetSqlException(exc, sql, model);                
+                throw GetSqlException(exc, sql, model);
             }
 
             await AfterDeleteAsync(cn, model, txn);
         }
 
-        public async virtual Task<TKey> MergeAsync(TModel model)
+        public async virtual Task<TModel> MergeAsync(TModel model, IDbTransaction txn = null)
         {
+            TModel existing;
             if (IsNew(model))
             {
-
+                var keyProperties = GetKeyProperties(model);
+                var sql = SqlBuilder.GetWhere(typeof(TModel), keyProperties, Context.StartDelimiter, Context.EndDelimiter);
+                existing = await GetInnerAsync(sql, model, txn);
+                if (existing != null) model.Id = existing.Id;
             }
 
-            throw new NotImplementedException();
-        }        
+            return await SaveAsync(model, txn: txn);
+        }
+
+        private IEnumerable<PropertyInfo> GetKeyProperties(TModel model) =>
+            model.GetType().GetProperties().Where(pi =>
+            {
+                var attr = pi.GetCustomAttribute(typeof(KeyAttribute));
+                return attr != null;
+            });
 
         private bool IsNew(TModel model) => model.Id.Equals(default);
 
