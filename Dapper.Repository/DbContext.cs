@@ -5,12 +5,14 @@ namespace Dapper.Repository
 {
     public abstract class DbContext
     {        
-        public DbContext(ILogger logger)
-        {            
+        public DbContext(string userName, ILogger logger)
+        {
+            UserName = userName;
             Logger = logger;
         }        
         
         public ILogger Logger { get; }
+        public string UserName { get; }
         public abstract IDbConnection GetConnection();
         public abstract char StartDelimiter { get; }
         public abstract char EndDelimiter { get; }

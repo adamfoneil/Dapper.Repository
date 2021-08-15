@@ -13,9 +13,9 @@ namespace Dapper.Repository.Test.Repositories
         {
         }
 
-        protected override async Task<User> GetUserAsync(IDbConnection connection) => await Task.FromResult(new User()
+        protected override async Task<User> GetUserAsync(IDbConnection connection, string userName) => await Task.FromResult(new User()
         {
-            Name = "adamo"
+            Name = userName
         });        
 
         protected override async Task BeforeSaveAsync(IDbConnection connection, SaveAction action, TModel model, IDbTransaction txn = null)

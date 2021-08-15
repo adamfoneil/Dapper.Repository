@@ -10,7 +10,7 @@ namespace Dapper.Repository.Test
     {
         public const string DbName = "DapperRepository";
 
-        public MyContext(ILogger logger) : base(LocalDb.GetConnectionString(DbName), logger)
+        public MyContext(string userName, ILogger logger) : base(LocalDb.GetConnectionString(DbName), userName, logger)
         {
         }
 

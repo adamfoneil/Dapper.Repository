@@ -28,7 +28,7 @@ namespace Dapper.Repository
             Logger = context.Logger;
         }
 
-        protected virtual async Task<TUser> GetUserAsync(IDbConnection connection) => await Task.FromResult(default(TUser));
+        protected virtual async Task<TUser> GetUserAsync(IDbConnection connection, string userName) => await Task.FromResult(default(TUser));
 
         public async virtual Task<TModel> GetAsync(TKey id, IDbTransaction txn = null)
         {
@@ -52,7 +52,7 @@ namespace Dapper.Repository
                 throw new Exception($"Unrecognized save action: {action}");
 
             var cn = Context.GetConnection();
-            if (User is null) User = await GetUserAsync(cn);
+            if (User is null) User = await GetUserAsync(cn, Context.UserName);
 
             var validation = await ValidateAsync(cn, model, txn);
             if (!validation.result) throw new ValidationException(validation.message);
@@ -79,7 +79,7 @@ namespace Dapper.Repository
         public async virtual Task DeleteAsync(TModel model, IDbTransaction txn = null)
         {            
             var cn = Context.GetConnection();
-            if (User is null) User = await GetUserAsync(cn);
+            if (User is null) User = await GetUserAsync(cn, Context.UserName);
 
             var allow = await AllowDeleteAsync(cn, model, txn);
             if (!allow.result) throw new PermissionException($"Delete permission was denied: {allow.message}");
@@ -141,7 +141,7 @@ namespace Dapper.Repository
         private async Task<TModel> GetInnerAsync(string sql, object parameters, IDbTransaction txn = null)
         {
             var cn = Context.GetConnection();
-            if (User is null) User = await GetUserAsync(cn);
+            if (User is null) User = await GetUserAsync(cn, Context.UserName);
 
             TModel result;
 

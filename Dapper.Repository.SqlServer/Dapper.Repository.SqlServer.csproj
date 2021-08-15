@@ -11,8 +11,8 @@
     <RepositoryUrl>https://github.com/adamfoneil/Dapper.Repository</RepositoryUrl>
     <PackageTags>dapper sql-server crud repository-pattern</PackageTags>
     <Description>A Dapper-based repository library targeting SQL Server and .NET 5</Description>
-    <Version>1.0.3</Version>
-    <PackageReleaseNotes>Custom identity improvements</PackageReleaseNotes>
+    <Version>1.0.4</Version>
+    <PackageReleaseNotes>Reworked how user info is handled</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
