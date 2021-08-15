@@ -30,46 +30,24 @@ The [integration tests](https://github.com/adamfoneil/Dapper.Repository/blob/mas
 
 0. Install NuGet package [AO.Dapper.Repository.SqlServer](https://www.nuget.org/packages/AO.Dapper.Repository.SqlServer/)
 1. Before you start, you should already have a number of model classes. My tests work with these [examples](https://github.com/adamfoneil/Dapper.Repository/tree/master/Dapper.Repository.Test.Models).
-2. Create a class that implements [IUserBase](https://github.com/adamfoneil/Models/blob/master/Models/Interfaces/IUserBase.cs) to represent the current user in your application. Example: [User](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/User.cs)
-3. Create a class based on `SqlServerContext<TUser>` that will provide the access point to all your repositories. You'll need your `TUser` type that you created in the prior step. Example: [MyContext](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/MyContext.cs). Your context object gets an `ILogger` as well as info about the current user and your database connection string.
-4. Create a `Repository` class that handles your common data access scenario. Example: [BaseRepository](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/Repositories/BaseRepository.cs). My example assumes an `int` key type, and overrides the [BeforeSaveAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/Repository_virtuals.cs#L41) method to capture user and timestamp info during inserts and updates.
-5. For models that require unique behavior, validation, or trigger-like behavior, create repository classes specifically for them. You would typically inherit from your own `BaseRepository` so as to preserve any existing conventional behavior. Example: [WorkHoursRepository](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/Repositories/WorkHoursRepository.cs). Note, there are many overrides you can implement for various crud events, found [here](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/Repository_virtuals.cs).
-6. Add your repository classes as read-only properties of your `DbContext`, for example [here](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/MyContext.cs#L17-L23). Note, I have more model classes than repositories because I'm lazy, and don't need them for a working demo.
+2. Create a class based on `SqlServerContext<TUser>` that will provide the access point to all your repositories. Example: [MyContext](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/MyContext.cs). You pass your database connection string, current user name, and an `ILogger`. My example uses a localdb connection string for test purposes. In a real application, it would typically come from your configuration in some way. Optionally, but most often, you'll need to override [QueryUserInfo](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/MyContext.cs#L23) so that you can access properties of the current user in your crud operations. More on this below.
+3. Create a `Repository` class that handles your common data access scenario. Example: [BaseRepository](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/Repositories/BaseRepository.cs). My example assumes an `int` key type, and overrides the [BeforeSaveAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/Repository_virtuals.cs#L41) method to capture user and timestamp info during inserts and updates.
+4. For models that require unique behavior, validation, or trigger-like behavior, create repository classes specifically for them. You would typically inherit from your own `BaseRepository` so as to preserve any existing conventional behavior. Example: [WorkHoursRepository](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/Repositories/WorkHoursRepository.cs). Note, there are many overrides you can implement for various crud events, found [here](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/Repository_virtuals.cs).
+5. Add your repository classes as read-only properties of your `DbContext`, for example [here](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/MyContext.cs#L28-L37). Note, I have more model classes than repositories because I'm lazy, and don't need them for a working demo.
 
 ## Architecture
-- [DbContext](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/DbContext.cs) provides the low-level connection infrastracture and some SQL dialect options. This will provide the basis for database-specific implementations, namely [SqlServerContext](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/SqlServerContext.cs). This is what you'd inherit from in your project and inject in your components and controllers. Note, this is not to be confused with Entity Framework's DbContext object.
+- [DbContext](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/DbContext.cs) provides the low-level connection infrastracture and some SQL dialect options. This will provide the basis for database-specific implementations, namely [SqlServerContext](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/SqlServerContext.cs). This is what you'd inherit from in your project and inject in your components and controllers. This is not to be confused with Entity Framework's DbContext object. I risked likely confusion here because I think "DbContext" is a good name for what this does.
 - Your model classes must implement [IModel&lt;TKey&gt;](https://github.com/adamfoneil/Models/blob/master/Models/Interfaces/IModel.cs), from [AO.Models](https://www.nuget.org/packages/AO.Models/1.1.39). This is different from my CX project which didn't have a dependency like this. I figure this is a pretty minimal requirement, and a straightforward way to ensure that all models have an `Id` property with a consistent type.
 - [Repository](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/Repository.cs) provides CRUD methods like Get, Save, Delete, Merge, and so on. You'd inherit from this in your project, typically creating a base repository that implements your conventions (say, around auditing, timestamps, and such). For tables that need unique business logic, you'd create a repository just for them with specific [overrides](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/Repository_virtuals.cs) of default behavior. For tables with no special requirements, you can use a more standard or generic repository.
 - The low-level SQL generation happens in AO.Models [SqlBuilder](https://github.com/adamfoneil/Models/blob/master/Models/Static/SqlBuilder.cs), which uses reflection to analyze C# objects and properties to derive SQL.
-- Your `DbContext` would have repositories added that represent access to each table in your database.
+- Your `DbContext` would have repositories added that represent access to each table in your database, as in this [example](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/MyContext.cs#L17-L26).
 
-```csharp
-public class BaseRepository<TModel, TKey> : Repository<TModel, TKey>
-{
-    // implement all my model-wide conventions
-}
+## Working With TUser
+Most applications will have authentication and need to track database operations by user in some way. When you create your `DbContext` object, you must provide a `TUser` that represents the current user. In the tests, I have a very simple [User](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/User.cs) type.
 
-// create a dedicated repository class for each table, adding whatever is special about it by overriding crud methods as necessary.
-// If a table has nothing unique about it (no special behavior or rules), then it may use BaseRepository directly
-public class EmployeeRepository : BaseRepository<Employee, int>
-{
-}
+In your application, you should override [QueryUserAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/DbContext.cs#L39) so that all your user properties are available to crud operations. This is usually necessary for determining permissions or verifying tenant isolation, for example.
 
-// lastly, create a context object that provides access to all your repositories.
-// this is what you'd inject in your IoC container and access throughout your application
-public MyContext : SqlServerContext
-{
-    public MyContext(string connectionString, IUserBase user) : base(connectionstring, user)
-    {
-    }
-    
-    // assumes that the Appointment table has nothing special about it
-    public BaseRepository<Appointment, int> Appointments => new BaseRepository<Appointment, int>(this); 
-    
-    // special repository because for some reason it has special validation or other behavior
-    public EmployeeRepository Employees => new EmployeeRepository(this); 
-}
-```
+A straightforward override of `QueryUserAsync` could be a database query like any other. Bear in mind, however, that this may be called very often in your application, which is not very scalable. I'm working on some examples of this that will use [IDistributedCache](https://docs.microsoft.com/en-us/aspnet/core/performance/caching/distributed?view=aspnetcore-5.0) in some way, so stay tuned.
 
 ## Background
 I've been critical of the repository pattern in the past because I've seen it lead to verbosity and repeated code. But there's no inherent reason the repository pattern should fall prey to this. I'm revisiting this now because my [Dapper.CX](https://github.com/adamfoneil/Dapper.CX) project has been getting complicated. Once again I'm feeling the need to get back to basics, rethink the dependency footprint and my approach to business logic.
