@@ -14,9 +14,9 @@ namespace Dapper.Repository.Test
 
         public MyContext(string userName, ILogger logger) : base(LocalDb.GetConnectionString(DbName), userName, logger)
         {
-        }
+        }        
 
-        public override async Task<User> GetUserAsync(IDbConnection connection, string userName) => await Task.FromResult(new User()
+        public override async Task<User> QueryUserAsync(IDbConnection connection, string userName) => await Task.FromResult(new User()
         {
             Name = userName
         });
