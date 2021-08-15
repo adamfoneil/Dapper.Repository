@@ -26,9 +26,7 @@ namespace Dapper.Repository
         {
             Context = context;
             Logger = context.Logger;
-        }
-
-        protected virtual async Task<TUser> GetUserAsync(IDbConnection connection, string userName) => await Task.FromResult(default(TUser));
+        }        
 
         public async virtual Task<TModel> GetAsync(TKey id, IDbTransaction txn = null)
         {

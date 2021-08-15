@@ -7,6 +7,12 @@ namespace Dapper.Repository
     public partial class Repository<TUser, TModel, TKey>
     {
         /// <summary>
+        /// override this to get info about the current user.
+        /// Use a caching solution in your application to avoid unnecessary database round trips
+        /// </summary>
+        protected virtual async Task<TUser> GetUserAsync(IDbConnection connection, string userName) => await Task.FromResult(default(TUser));
+
+        /// <summary>
         /// override this to populate "navigation properties" of your model row
         /// </summary>
         protected async virtual Task GetRelatedAsync(IDbConnection connection, TModel model, IDbTransaction txn = null) => await Task.CompletedTask;
