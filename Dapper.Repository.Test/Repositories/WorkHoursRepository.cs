@@ -7,7 +7,7 @@ namespace Dapper.Repository.Test.Repositories
 {
     public class WorkHoursRepository : BaseRepository<WorkHours>
     {
-        public WorkHoursRepository(SqlServerContext<User> context) : base(context)
+        public WorkHoursRepository(SqlServerContext context) : base(context)
         {
         }
 

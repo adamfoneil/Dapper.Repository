@@ -6,6 +6,7 @@ using ModelSync.Models;
 using SqlServer.LocalDb;
 using SqlServer.LocalDb.Extensions;
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -44,11 +45,15 @@ namespace Dapper.Repository.Test
                 Name = "sample workspace"
             });
 
+            Assert.IsTrue(ws.CreatedBy.Equals("adamo"));
+
             ws.StorageContainer = "whatever";
             await context.Workspaces.SaveAsync(ws);
 
             ws = await context.Workspaces.GetAsync(ws.Id);
             Assert.IsTrue(ws.StorageContainer.Equals("whatever"));
+
+            Assert.IsTrue(ws.ModifiedBy.Equals("adamo"));
 
             await context.Workspaces.DeleteAsync(ws);
         }
@@ -79,6 +84,26 @@ namespace Dapper.Repository.Test
             var user = await context.Users.GetByUserIdAsync(id);
 
             Assert.IsTrue(user.Email.Equals(email));
+        }
+
+        [TestMethod]
+        public async Task WithValidation()
+        {
+            var context = GetContext();
+
+            try
+            {
+                var hours = await context.WorkHours.SaveAsync(new WorkHours()
+                {
+                    Hours = -1
+                });
+
+                Assert.Fail("Should not be able to save this row");
+            }
+            catch (Exception exc)
+            {
+                Assert.IsTrue(exc is ValidationException && exc.Message.Equals("Hours must be greater than zero."));
+            }
         }
     }
 }

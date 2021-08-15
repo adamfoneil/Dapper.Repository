@@ -1,18 +1,15 @@
-﻿using AO.Models.Interfaces;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using System.Data;
 
 namespace Dapper.Repository
 {
-    public abstract class DbContext<TUser> where TUser : IUserBase
+    public abstract class DbContext
     {        
-        public DbContext(TUser user, ILogger logger)
-        {
-            User = user;
+        public DbContext(ILogger logger)
+        {            
             Logger = logger;
-        }
-
-        public TUser User { get; }
+        }        
+        
         public ILogger Logger { get; }
         public abstract IDbConnection GetConnection();
         public abstract char StartDelimiter { get; }

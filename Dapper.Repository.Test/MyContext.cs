@@ -6,11 +6,11 @@ using SqlServer.LocalDb;
 
 namespace Dapper.Repository.Test
 {
-    public class MyContext : SqlServerContext<User>
+    public class MyContext : SqlServerContext
     {
         public const string DbName = "DapperRepository";
 
-        public MyContext(ILogger logger) : base(LocalDb.GetConnectionString(DbName), new User() { Name = "adamo" }, logger)
+        public MyContext(ILogger logger) : base(LocalDb.GetConnectionString(DbName), logger)
         {
         }
 

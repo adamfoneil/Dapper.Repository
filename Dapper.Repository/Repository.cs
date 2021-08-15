@@ -15,16 +15,20 @@ using System.Threading.Tasks;
 
 namespace Dapper.Repository
 {
-    public partial class Repository<TUser, TModel, TKey> where TModel : IModel<TKey> where TUser : IUserBase
+    public partial class Repository<TUser, TModel, TKey> where TModel : IModel<TKey>
     {
-        protected readonly DbContext<TUser> Context;
+        protected readonly DbContext Context;
         protected readonly ILogger Logger;
 
-        public Repository(DbContext<TUser> context)
+        protected TUser User { get; private set; }
+
+        public Repository(DbContext context)
         {
             Context = context;
             Logger = context.Logger;
         }
+
+        protected virtual async Task<TUser> GetUserAsync(IDbConnection connection) => await Task.FromResult(default(TUser));
 
         public async virtual Task<TModel> GetAsync(TKey id, IDbTransaction txn = null)
         {
@@ -48,6 +52,8 @@ namespace Dapper.Repository
                 throw new Exception($"Unrecognized save action: {action}");
 
             var cn = Context.GetConnection();
+            if (User is null) User = await GetUserAsync(cn);
+
             var validation = await ValidateAsync(cn, model, txn);
             if (!validation.result) throw new ValidationException(validation.message);
 
@@ -71,8 +77,9 @@ namespace Dapper.Repository
         }
 
         public async virtual Task DeleteAsync(TModel model, IDbTransaction txn = null)
-        {
+        {            
             var cn = Context.GetConnection();
+            if (User is null) User = await GetUserAsync(cn);
 
             var allow = await AllowDeleteAsync(cn, model, txn);
             if (!allow.result) throw new PermissionException($"Delete permission was denied: {allow.message}");
@@ -134,6 +141,8 @@ namespace Dapper.Repository
         private async Task<TModel> GetInnerAsync(string sql, object parameters, IDbTransaction txn = null)
         {
             var cn = Context.GetConnection();
+            if (User is null) User = await GetUserAsync(cn);
+
             TModel result;
 
             try

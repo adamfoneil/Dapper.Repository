@@ -9,9 +9,14 @@ namespace Dapper.Repository.Test.Repositories
 {
     public class BaseRepository<TModel> : Repository<User, TModel, int> where TModel : IModel<int>
     {
-        public BaseRepository(SqlServerContext<User> context) : base(context)
+        public BaseRepository(SqlServerContext context) : base(context)
         {
         }
+
+        protected override async Task<User> GetUserAsync(IDbConnection connection) => await Task.FromResult(new User()
+        {
+            Name = "adamo"
+        });        
 
         protected override async Task BeforeSaveAsync(IDbConnection connection, SaveAction action, TModel model, IDbTransaction txn = null)
         {
@@ -20,13 +25,13 @@ namespace Dapper.Repository.Test.Repositories
                 switch (action)
                 {
                     case SaveAction.Insert:
-                        baseTable.CreatedBy = Context.User.Name;
-                        baseTable.DateCreated = Context.User.LocalTime;
+                        baseTable.CreatedBy = User.Name;
+                        baseTable.DateCreated = User.LocalTime;
                         break;
 
                     case SaveAction.Update:
-                        baseTable.ModifiedBy = Context.User.Name;
-                        baseTable.DateModified = Context.User.LocalTime;
+                        baseTable.ModifiedBy = User.Name;
+                        baseTable.DateModified = User.LocalTime;
                         break;
                 }
             }
