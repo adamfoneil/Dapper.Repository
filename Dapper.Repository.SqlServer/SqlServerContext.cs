@@ -4,7 +4,7 @@ using System.Data;
 
 namespace Dapper.Repository.SqlServer
 {
-    public class SqlServerContext : DbContext
+    public class SqlServerContext<TUser> : DbContext<TUser>
     {
         private readonly string _connectionString;
 

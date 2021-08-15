@@ -10,7 +10,7 @@ namespace Dapper.Repository.Test.Repositories
     /// </summary>
     public class UserRepository : Repository<User, UserProfile, string>
     {
-        public UserRepository(SqlServerContext context) : base(context)
+        public UserRepository(SqlServerContext<User> context) : base(context)
         {
         }
         
