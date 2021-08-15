@@ -16,6 +16,10 @@ namespace Dapper.Repository.Test
         {
         }        
 
+        /// <summary>
+        /// in a real app, this would be some kind of query with cache access of some kind.
+        /// For test purposes, this is just a hardcoded user, in effect
+        /// </summary>
         public override async Task<User> QueryUserAsync(IDbConnection connection, string userName) => await Task.FromResult(new User()
         {
             Name = userName
