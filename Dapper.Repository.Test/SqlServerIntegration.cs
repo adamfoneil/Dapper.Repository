@@ -29,10 +29,12 @@ namespace Dapper.Repository.Test
             }            
         }
 
+        private const string UserName = "adamo";
+
         private MyContext GetContext()
         {
             var logger = LoggerFactory.Create(config => config.AddDebug()).CreateLogger("Testing");
-            return new MyContext(logger);
+            return new MyContext(UserName, logger);
         }
 
         [TestMethod]
@@ -45,7 +47,7 @@ namespace Dapper.Repository.Test
                 Name = "sample workspace"
             });
 
-            Assert.IsTrue(ws.CreatedBy.Equals("adamo"));
+            Assert.IsTrue(ws.CreatedBy.Equals(UserName));
 
             ws.StorageContainer = "whatever";
             await context.Workspaces.SaveAsync(ws);
@@ -53,7 +55,7 @@ namespace Dapper.Repository.Test
             ws = await context.Workspaces.GetAsync(ws.Id);
             Assert.IsTrue(ws.StorageContainer.Equals("whatever"));
 
-            Assert.IsTrue(ws.ModifiedBy.Equals("adamo"));
+            Assert.IsTrue(ws.ModifiedBy.Equals(UserName));
 
             await context.Workspaces.DeleteAsync(ws);
         }

@@ -34,6 +34,6 @@ namespace Dapper.Repository
         /// override this to get info about the current user.
         /// Use a caching solution in your application to avoid unnecessary database round trips
         /// </summary>
-        public virtual async Task<TUser> QueryUserAsync(IDbConnection connection) => await Task.FromResult(default(TUser));
+        protected virtual async Task<TUser> QueryUserAsync(IDbConnection connection) => await Task.FromResult(default(TUser));
     }
 }
