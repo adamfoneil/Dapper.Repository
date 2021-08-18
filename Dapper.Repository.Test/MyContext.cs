@@ -12,7 +12,7 @@ namespace Dapper.Repository.Test
     {
         public const string DbName = "DapperRepository";
 
-        public MyContext(string userName, ILogger logger) : base(LocalDb.GetConnectionString(DbName), userName, logger)
+        public MyContext(ILogger logger) : base(LocalDb.GetConnectionString(DbName), logger)
         {
         }        
 
@@ -20,9 +20,9 @@ namespace Dapper.Repository.Test
         /// in a real app, this would be some kind of query with cache access of some kind.
         /// For test purposes, this is just a hardcoded user, in effect
         /// </summary>
-        public override async Task<User> QueryUserAsync(IDbConnection connection, string userName) => await Task.FromResult(new User()
+        public override async Task<User> QueryUserAsync(IDbConnection connection) => await Task.FromResult(new User()
         {
-            Name = userName
+            Name = "adamo"
         });
 
         public BaseRepository<Workspace> Workspaces => new BaseRepository<Workspace>(this);

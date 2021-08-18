@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AO.Models" Version="1.1.42" />
+    <PackageReference Include="AO.Models" Version="1.1.45" />
   </ItemGroup>
 
 </Project>

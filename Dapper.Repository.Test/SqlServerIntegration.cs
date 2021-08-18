@@ -32,7 +32,7 @@ namespace Dapper.Repository.Test
         private MyContext GetContext()
         {
             var logger = LoggerFactory.Create(config => config.AddDebug()).CreateLogger("Testing");
-            return new MyContext("adamo", logger);
+            return new MyContext(logger);
         }
 
         [TestMethod]

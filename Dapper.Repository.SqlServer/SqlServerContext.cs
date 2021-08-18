@@ -8,7 +8,7 @@ namespace Dapper.Repository.SqlServer
     {
         private readonly string _connectionString;
 
-        public SqlServerContext(string connectionString, string userName, ILogger logger) : base(userName, logger)
+        public SqlServerContext(string connectionString, ILogger logger) : base(logger)
         {
             _connectionString = connectionString;
         }

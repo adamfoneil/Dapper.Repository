@@ -6,14 +6,12 @@ namespace Dapper.Repository
 {
     public abstract class DbContext<TUser>
     {        
-        public DbContext(string userName, ILogger logger)
-        {
-            UserName = userName;
+        public DbContext(ILogger logger)
+        {            
             Logger = logger;
         }        
         
-        public ILogger Logger { get; }
-        public string UserName { get; }
+        public ILogger Logger { get; }        
         public TUser User { get; internal set; }
 
         public abstract IDbConnection GetConnection();
@@ -26,7 +24,7 @@ namespace Dapper.Repository
             if (User is null)
             {
                 using var cn = GetConnection();
-                User = await QueryUserAsync(cn, UserName);
+                User = await QueryUserAsync(cn);
             }
 
             return User;
@@ -36,6 +34,6 @@ namespace Dapper.Repository
         /// override this to get info about the current user.
         /// Use a caching solution in your application to avoid unnecessary database round trips
         /// </summary>
-        public virtual async Task<TUser> QueryUserAsync(IDbConnection connection, string userName) => await Task.FromResult(default(TUser));
+        public virtual async Task<TUser> QueryUserAsync(IDbConnection connection) => await Task.FromResult(default(TUser));
     }
 }
