@@ -45,7 +45,7 @@ The [integration tests](https://github.com/adamfoneil/Dapper.Repository/blob/mas
 ## Working With TUser
 Most applications will have authentication and need to track database operations by user in some way. When you create your `DbContext` object, you must provide a `TUser` that represents the current user. In the tests, I have a very simple [User](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/User.cs) type.
 
-In your application, you should override [QueryUserAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/DbContext.cs#L39) so that all your user properties are available to crud operations. This is usually necessary for determining permissions or verifying tenant isolation, for example.
+In your application, you should override [QueryUserAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/DbContext.cs#L37) so that all your user properties are available to crud operations. This is usually necessary for determining permissions or verifying tenant isolation, for example.
 
 A straightforward override of `QueryUserAsync` could be a database query like any other. Bear in mind, however, that this may be called very often in your application, which is not very scalable. I'm working on some examples of this that will use [IDistributedCache](https://docs.microsoft.com/en-us/aspnet/core/performance/caching/distributed?view=aspnetcore-5.0) in some way, so stay tuned.
 
