@@ -13,6 +13,7 @@
     <Description>A Dapper-based repository library targeting SQL Server and .NET 5</Description>
     <Version>1.0.7</Version>
     <PackageReleaseNotes>Further simplified TUser access</PackageReleaseNotes>
+    <Copyright>Copyright (c) 2021 Adam O'Neil</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
