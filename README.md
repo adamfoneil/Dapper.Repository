@@ -8,7 +8,7 @@ This library lets you write data access code that offers:
 
 To implement, bear in mind:
 - Your model classes must implement [IModel](https://github.com/adamfoneil/Models/blob/master/Models/Interfaces/IModel.cs) from package [AO.Models](https://www.nuget.org/packages/AO.Models), installed automatically as a dependency.
-- As a Dapper-based library, this uses direct database connections. As such, this works only on the backend -- such as in a Blazor Server app or API backend.
+- As a Dapper-based library, this uses direct database connections. As such, this works only on the backend -- such as in a Blazor Server app, API backend, or MVC/Razor Pages app.
 
 Example, using a fictional `MyContext` object:
 
