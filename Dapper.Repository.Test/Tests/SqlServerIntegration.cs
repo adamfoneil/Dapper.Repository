@@ -17,13 +17,15 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace Dapper.Repository.Test
+namespace Dapper.Repository.Test.Tests
 {
     [TestClass]
     public class SqlServerIntegration
     {
         [ClassInitialize]
-        public static async Task Initialize(TestContext context)
+        public static async Task Initialize(TestContext context) => await BuildLocalDatabase();
+
+        public static async Task BuildLocalDatabase()
         {
             using (var cn = LocalDb.GetConnection(SimpleContext.DbName))
             {
@@ -43,7 +45,7 @@ namespace Dapper.Repository.Test
                         [AbsoluteExpiration] DATETIMEOFFSET NULL
                     )");
 
-                await cn.InsertAsync(new UserProfile()
+                await cn.InsertAsync<UserProfile, int>(new UserProfile()
                 {
                     Id = Guid.NewGuid().ToString(),
                     UserName = "adamo",
@@ -53,10 +55,10 @@ namespace Dapper.Repository.Test
                     LastName = "O'Neil"
                 }, new[]
                 {
-                    "Id", "UserName", "Email", "TimeZoneId", "FirstName", "LastName", 
+                    "Id", "UserName", "Email", "TimeZoneId", "FirstName", "LastName",
                     "EmailConfirmed", "PhoneNumberConfirmed", "TwoFactorEnabled"
                 });
-            }            
+            }
         }
 
         private const string UserName = "adamo";

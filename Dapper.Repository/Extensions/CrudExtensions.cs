@@ -9,15 +9,44 @@ namespace Dapper.Repository.Extensions
 {
     internal static class CrudExtensionsBase
     {
-        public static async Task<TModel> GetAsync<TModel, TKey>(this IDbConnection connection, TKey id, char startDelimiter, char endDelimiter, string identityColumn = "Id")
+        public const string IdentityColumn = "Id";
+
+        public static async Task<TModel> GetAsync<TModel, TKey>(this IDbConnection connection, TKey id, char startDelimiter, char endDelimiter, string identityColumn = IdentityColumn)
         {
             var sql = SqlBuilder.Get<TModel>(startDelimiter, endDelimiter, identityColumn);
-            return await connection.QuerySingleOrDefaultAsync<TModel>(sql, new { id });
+
+            try
+            {
+                return await connection.QuerySingleOrDefaultAsync<TModel>(sql, new { id });
+            }
+            catch (Exception exc)
+            {
+                throw new SqlException(exc.Message, sql);
+            }
+            
         }
 
-        public static async Task<TModel> InsertAsync<TModel>(this IDbConnection connection, TModel model, char startDelimiter, char endDelimiter, IEnumerable<string> columnNames = null, string identityColumn = "Id", Func<IDbConnection, TModel, Task> afterInsert = null)
+        public static async Task<TModel> InsertAsync<TModel, TKey>(this IDbConnection connection, TModel model, char startDelimiter, char endDelimiter, IEnumerable<string> columnNames = null, string identityColumn = IdentityColumn, string selectIdentityCommand = null, Action<TModel, TKey> afterInsert = null)
         {
             var sql = SqlBuilder.Insert<TModel>(columnNames, startDelimiter: startDelimiter, endDelimiter: endDelimiter, identityColumn: identityColumn);
+            sql += $"; {selectIdentityCommand}";
+
+            try
+            {
+                var id = await connection.QuerySingleOrDefaultAsync<TKey>(sql, model);
+                afterInsert?.Invoke(model, id);
+            }
+            catch (Exception exc)
+            {
+                throw new SqlException(exc.Message, sql, model);
+            }
+
+            return model;                        
+        }
+
+        public static async Task UpdateAsync<TModel>(this IDbConnection connection, TModel model, char startDelimiter, char endDelimiter, IEnumerable<string> columnNames, string identityColumn = IdentityColumn)
+        {
+            var sql = SqlBuilder.Update<TModel>(columnNames, startDelimiter: startDelimiter, endDelimiter: endDelimiter, identityColumn: identityColumn);
 
             try
             {
@@ -26,17 +55,21 @@ namespace Dapper.Repository.Extensions
             catch (Exception exc)
             {
                 throw new SqlException(exc.Message, sql, model);
-            }
-
-            // intended for getting identity value
-            if (afterInsert != null) await afterInsert.Invoke(connection, model);
-            return model;                        
+            }            
         }
 
-        public static async Task UpdateAsync<TModel>(this IDbConnection connection, TModel model, char startDelimiter, char endDelimiter, IEnumerable<string> columnNames, string identityColumn = "Id")
+        public static async Task DeleteAsync<TModel, TKey>(this IDbConnection connection, TKey id, char startDelimiter, char endDelimiter, string identityColumn = IdentityColumn, string tableName = null)
         {
-            var sql = SqlBuilder.Update<TModel>(columnNames, startDelimiter: startDelimiter, endDelimiter: endDelimiter, identityColumn: identityColumn);
-            await connection.ExecuteAsync(sql, model);            
-        }
+            var sql = SqlBuilder.Delete<TModel>(startDelimiter, endDelimiter, identityColumn, tableName);
+
+            try
+            {
+                await connection.ExecuteAsync(sql, new { id });
+            }
+            catch (Exception exc)
+            {
+                throw new SqlException(exc.Message, sql);
+            }            
+        }            
     }
 }
