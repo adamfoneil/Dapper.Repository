@@ -11,7 +11,7 @@ namespace Dapper.Repository.Extensions
     {
         public const string IdentityColumn = "Id";
 
-        public static async Task<TModel> GetAsync<TModel, TKey>(this IDbConnection connection, TKey id, char startDelimiter, char endDelimiter, string identityColumn = IdentityColumn)
+        internal static async Task<TModel> GetAsync<TModel, TKey>(this IDbConnection connection, TKey id, char startDelimiter, char endDelimiter, string identityColumn = IdentityColumn)
         {
             var sql = SqlBuilder.Get<TModel>(startDelimiter, endDelimiter, identityColumn);
 
@@ -26,7 +26,7 @@ namespace Dapper.Repository.Extensions
             
         }
 
-        public static async Task<TModel> InsertAsync<TModel, TKey>(this IDbConnection connection, TModel model, char startDelimiter, char endDelimiter, IEnumerable<string> columnNames = null, string identityColumn = IdentityColumn, string selectIdentityCommand = null, Action<TModel, TKey> afterInsert = null)
+        internal static async Task<TModel> InsertAsync<TModel, TKey>(this IDbConnection connection, TModel model, char startDelimiter, char endDelimiter, IEnumerable<string> columnNames = null, string identityColumn = IdentityColumn, string selectIdentityCommand = null, Action<TModel, TKey> afterInsert = null)
         {
             var sql = SqlBuilder.Insert<TModel>(columnNames, startDelimiter: startDelimiter, endDelimiter: endDelimiter, identityColumn: identityColumn);
             sql += $"; {selectIdentityCommand}";
@@ -44,7 +44,7 @@ namespace Dapper.Repository.Extensions
             return model;                        
         }
 
-        public static async Task UpdateAsync<TModel>(this IDbConnection connection, TModel model, char startDelimiter, char endDelimiter, IEnumerable<string> columnNames, string identityColumn = IdentityColumn)
+        internal static async Task UpdateAsync<TModel>(this IDbConnection connection, TModel model, char startDelimiter, char endDelimiter, IEnumerable<string> columnNames, string identityColumn = IdentityColumn)
         {
             var sql = SqlBuilder.Update<TModel>(columnNames, startDelimiter: startDelimiter, endDelimiter: endDelimiter, identityColumn: identityColumn);
 
@@ -58,7 +58,7 @@ namespace Dapper.Repository.Extensions
             }            
         }
 
-        public static async Task DeleteAsync<TModel, TKey>(this IDbConnection connection, TKey id, char startDelimiter, char endDelimiter, string identityColumn = IdentityColumn, string tableName = null)
+        internal static async Task DeleteAsync<TModel, TKey>(this IDbConnection connection, TKey id, char startDelimiter, char endDelimiter, string identityColumn = IdentityColumn, string tableName = null)
         {
             var sql = SqlBuilder.Delete<TModel>(startDelimiter, endDelimiter, identityColumn, tableName);
 
