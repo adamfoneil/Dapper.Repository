@@ -46,6 +46,8 @@ namespace Dapper.Repository.Test.Contexts
             return result;
         }
 
+        protected override async Task OnLogoutAsync() => await _cache.RemoveAsync(CacheKey);        
+
         private string CacheKey => $"userInfo.{_userName}";
 
         /// <summary>

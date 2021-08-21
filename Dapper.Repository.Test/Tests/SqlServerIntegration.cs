@@ -102,7 +102,7 @@ namespace Dapper.Repository.Test.Tests
             await context.CacheUserAsync();
 
             // force user to be queried again, but user should come from cache (which is a table for test purposes)
-            context.Logout();
+            context.ClearUser();
 
             // do some normal crud operations, which will cause the user to be queried
             await SaveAndDeleteWorkspace(context);            

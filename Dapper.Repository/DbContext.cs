@@ -30,12 +30,23 @@ namespace Dapper.Repository
             return User;
         }
 
-        public void Logout() => User = default(TUser);
+        public async Task LogoutAsync()
+        {
+            await OnLogoutAsync();
+            User = default(TUser);            
+        }
+
+        /// <summary>
+        /// this is for test purposes only to force cache use; you shouldn't need to use this in application code
+        /// </summary>
+        public void ClearUser() => User = default(TUser);
         
         /// <summary>
         /// override this to get info about the current user.
         /// Use a caching solution in your application to avoid unnecessary database round trips
         /// </summary>
         protected virtual async Task<TUser> QueryUserAsync(IDbConnection connection) => await Task.FromResult(default(TUser));
+
+        protected virtual async Task OnLogoutAsync() => await Task.CompletedTask;
     }
 }
