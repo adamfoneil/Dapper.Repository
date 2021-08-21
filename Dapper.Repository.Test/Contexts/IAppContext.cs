@@ -10,6 +10,9 @@ namespace Dapper.Repository.Test.Contexts
         Cache
     }
 
+    /// <summary>
+    /// enables use of Simple and Realistic contexts with the same integration tests
+    /// </summary>
     public interface IAppContext
     {
         ProfileSourceOptions ProfileSource { get; }
