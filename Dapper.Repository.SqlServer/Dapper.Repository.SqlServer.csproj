@@ -20,6 +20,7 @@
     <Compile Include="..\Dapper.Repository\DbContext.cs" Link="Shared\DbContext.cs" />
     <Compile Include="..\Dapper.Repository\Exceptions\PermissionException.cs" Link="Exceptions\PermissionException.cs" />
     <Compile Include="..\Dapper.Repository\Exceptions\SqlException.cs" Link="Exceptions\SqlException.cs" />
+    <Compile Include="..\Dapper.Repository\Extensions\CrudExtensions.cs" Link="Shared\CrudExtensions.cs" />
     <Compile Include="..\Dapper.Repository\Repository.cs" Link="Shared\Repository.cs" />
     <Compile Include="..\Dapper.Repository\Repository_virtuals.cs" Link="Shared\Repository_virtuals.cs" />
   </ItemGroup>

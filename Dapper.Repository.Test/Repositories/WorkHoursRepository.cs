@@ -1,4 +1,5 @@
-﻿using BlazorAO.Models;
+﻿using AO.Models.Interfaces;
+using BlazorAO.Models;
 using Dapper.Repository.SqlServer;
 using System.Data;
 using System.Threading.Tasks;
@@ -7,7 +8,7 @@ namespace Dapper.Repository.Test.Repositories
 {
     public class WorkHoursRepository : BaseRepository<WorkHours>
     {
-        public WorkHoursRepository(SqlServerContext<User> context) : base(context)
+        public WorkHoursRepository(SqlServerContext<IUserBase> context) : base(context)
         {
         }
 

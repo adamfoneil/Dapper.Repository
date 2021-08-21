@@ -1,4 +1,5 @@
-﻿using BlazorAO.Models;
+﻿using AO.Models.Interfaces;
+using BlazorAO.Models;
 using Dapper.Repository.SqlServer;
 using Dapper.Repository.Test.Repositories;
 using Microsoft.Extensions.Logging;
@@ -6,24 +7,24 @@ using SqlServer.LocalDb;
 using System.Data;
 using System.Threading.Tasks;
 
-namespace Dapper.Repository.Test
+namespace Dapper.Repository.Test.Contexts
 {
-    public class MyContext : SqlServerContext<User>
+    public class SimpleContext : SqlServerContext<IUserBase>, IAppContext
     {
         public const string DbName = "DapperRepository";
 
         private readonly string _userName;
 
-        public MyContext(string userName, ILogger logger) : base(LocalDb.GetConnectionString(DbName), logger)
+        public SimpleContext(string userName, ILogger logger) : base(LocalDb.GetConnectionString(DbName), logger)
         {
             _userName = userName;
-        }        
+        }
 
         /// <summary>
         /// in a real app, this would be some kind of query with cache access of some kind.
         /// For test purposes, this is just a hardcoded user, in effect
         /// </summary>        
-        protected override async Task<User> QueryUserAsync(IDbConnection connection) => await Task.FromResult(new User()
+        protected override async Task<IUserBase> QueryUserAsync(IDbConnection connection) => await Task.FromResult(new User()
         {
             Name = _userName
         });
@@ -37,6 +38,8 @@ namespace Dapper.Repository.Test
         public UserRepository Users => new UserRepository(this);
 
         // because it has unique validation
-        public WorkHoursRepository WorkHours => new WorkHoursRepository(this); 
+        public WorkHoursRepository WorkHours => new WorkHoursRepository(this);
+
+        public ProfileSourceOptions ProfileSource => ProfileSourceOptions.Cache;
     }
 }

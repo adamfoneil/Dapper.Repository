@@ -5,13 +5,13 @@ using System.Threading.Tasks;
 namespace Dapper.Repository
 {
     public abstract class DbContext<TUser>
-    {        
+    {
         public DbContext(ILogger logger)
-        {            
+        {
             Logger = logger;
-        }        
-        
-        public ILogger Logger { get; }        
+        }
+
+        public ILogger Logger { get; }
         public TUser User { get; internal set; }
 
         public abstract IDbConnection GetConnection();
@@ -30,6 +30,8 @@ namespace Dapper.Repository
             return User;
         }
 
+        public void Logout() => User = default(TUser);
+        
         /// <summary>
         /// override this to get info about the current user.
         /// Use a caching solution in your application to avoid unnecessary database round trips
