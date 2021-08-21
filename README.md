@@ -26,7 +26,7 @@ public class SomeController : Controller
     }
 }
 ```
-The [integration tests](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/SqlServerIntegration.cs) provide examples that give more context:
+The [integration tests](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/Tests/SqlServerIntegration.cs) provide examples that give more context:
 
 0. Install NuGet package [AO.Dapper.Repository.SqlServer](https://www.nuget.org/packages/AO.Dapper.Repository.SqlServer/)
 1. Before you start, you should already have a number of model classes. My tests work with these [examples](https://github.com/adamfoneil/Dapper.Repository/tree/master/Dapper.Repository.Test.Models). Your model classes need to implement [IModel](https://github.com/adamfoneil/Models/blob/master/Models/Interfaces/IModel.cs) from package [AO.Models](https://www.nuget.org/packages/AO.Models).
