@@ -7,6 +7,7 @@ using Dapper.Repository.Test.Repositories;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using SqlServer.LocalDb;
+using System;
 using System.Data;
 using System.Threading.Tasks;
 
@@ -27,22 +28,33 @@ namespace Dapper.Repository.Test.Contexts
         public ProfileSourceOptions ProfileSource { get; private set; }
 
         protected override async Task<IUserBase> QueryUserAsync(IDbConnection connection)
-        {            
+        {
+            ProfileSource = ProfileSourceOptions.Anonymous;
             if (string.IsNullOrEmpty(_userName)) return null;
-
-            var key = $"userInfo.{_userName}";
-            var result = await _cache.GetItemAsync<UserInfoResult>(key);
+            
+            var result = await _cache.GetItemAsync<UserInfoResult>(CacheKey);
             ProfileSource = ProfileSourceOptions.Cache;
 
             if (result == default(UserInfoResult))
             {
                 result = await new UserInfo() { UserName = _userName }.ExecuteSingleOrDefaultAsync(connection);                
                 result.Permissions = await new UserPermissions() { UserName = _userName }.ExecuteAsync(connection);
-                await _cache.SetItemAsync(key, result);
+                await _cache.SetItemAsync(CacheKey, result);
                 ProfileSource = ProfileSourceOptions.Database;
             }
 
             return result;
+        }
+
+        private string CacheKey => $"userInfo.{_userName}";
+
+        /// <summary>
+        /// this is just for test methods to force cache use
+        /// </summary>        
+        public async Task CacheUserAsync()
+        {
+            var user = await GetUserAsync();
+            await _cache.SetItemAsync(CacheKey, user as UserInfoResult);            
         }
 
         public BaseRepository<Workspace> Workspaces => new BaseRepository<Workspace>(this);

@@ -94,8 +94,18 @@ namespace Dapper.Repository.Test
         [TestMethod]
         public async Task CanUseCache()
         {
-            var context = GetRealisticContext();            
+            var context = GetRealisticContext();
+
+            // store user in cache table (wouldn't do in a real app)
+            await context.CacheUserAsync();
+
+            // force user to be queried again, but user should come from cache (which is a table for test purposes)
+            context.Logout();
+
+            // do some normal crud operations, which will cause the user to be queried
             await SaveAndDeleteWorkspace(context);            
+
+            // and the user should come from the cache source
             Assert.IsTrue(context.ProfileSource == ProfileSourceOptions.Cache);
         }
 

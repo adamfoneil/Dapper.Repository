@@ -5,6 +5,7 @@ namespace Dapper.Repository.Test.Contexts
 {
     public enum ProfileSourceOptions
     {
+        Anonymous,
         Database,
         Cache
     }
