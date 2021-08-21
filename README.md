@@ -1,14 +1,21 @@
 [![Build Status](https://ci.appveyor.com/api/projects/status/3opr5fvqudspcioh?svg=true)](https://ci.appveyor.com/project/adamosoftware/dapper-repository)
 [![Nuget](https://img.shields.io/nuget/v/AO.Dapper.Repository.SqlServer)](https://www.nuget.org/packages/AO.Dapper.Repository.SqlServer/)
 
-This library lets you write data access code like this:
+This library lets you write data access code that offers:
+- a DI-friendly single point of access to all your repository classes, keeping your constructors simple throughout your application
+- a way to implement model-wide conventions along with table-specific business logic where needed
+- efficient, typed user profile access
+
+The only requirement is that your model classes implement [IModel](https://github.com/adamfoneil/Models/blob/master/Models/Interfaces/IModel.cs) from package [AO.Models](https://www.nuget.org/packages/AO.Models).
+
+Example:
 
 ```csharp
 public class SomeController : Controller
 {
-    private readonly SqlServerContext _context;
+    private readonly MyContext _context;
     
-    public SomeController(SqlServerContext context)
+    public SomeController(MyContext context)
     {
         _context = context;
     }
@@ -26,10 +33,10 @@ public class SomeController : Controller
     }
 }
 ```
-The [integration tests](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/Tests/SqlServerIntegration.cs) provide examples that give more context:
+The [integration tests](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/Tests/SqlServerIntegration.cs) provide examples that give more context, but here's how to get started:
 
 0. Install NuGet package [AO.Dapper.Repository.SqlServer](https://www.nuget.org/packages/AO.Dapper.Repository.SqlServer/)
-1. Before you start, you should already have a number of model classes. My tests work with these [examples](https://github.com/adamfoneil/Dapper.Repository/tree/master/Dapper.Repository.Test.Models). Your model classes need to implement [IModel](https://github.com/adamfoneil/Models/blob/master/Models/Interfaces/IModel.cs) from package [AO.Models](https://www.nuget.org/packages/AO.Models).
+1. You should already have a number of model classes. My tests work with these [examples](https://github.com/adamfoneil/Dapper.Repository/tree/master/Dapper.Repository.Test.Models). Your model classes must implement [IModel](https://github.com/adamfoneil/Models/blob/master/Models/Interfaces/IModel.cs) from package [AO.Models](https://www.nuget.org/packages/AO.Models).
 2. Create a class based on `SqlServerContext<TUser>` that will provide the access point to all your repositories. Example: [SimpleContext](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/Contexts/SimpleContext.cs). You pass your database connection string, current user name, and an `ILogger`. My example uses a localdb connection string for test purposes. In a real application, it would typically come from your configuration in some way. Optionally, but most often, you'll need to override [QueryUserInfo](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/Contexts/SimpleContext.cs#L27) so that you can access properties of the current user in your crud operations. More on this below.
 3. Create a `Repository` class that handles your common data access scenario. Example: [BaseRepository](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/Repositories/BaseRepository.cs). My example assumes an `int` key type, and overrides the [BeforeSaveAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/Repository_virtuals.cs#L41) method to capture user and timestamp info during inserts and updates.
 4. For models that require unique behavior, validation, or trigger-like behavior, create repository classes specifically for them. You would typically inherit from your own `BaseRepository` so as to preserve any existing conventional behavior. Example: [WorkHoursRepository](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/Repositories/WorkHoursRepository.cs). Note, there are many overrides you can implement for various crud events, found [here](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/Repository_virtuals.cs).
@@ -43,7 +50,10 @@ The [integration tests](https://github.com/adamfoneil/Dapper.Repository/blob/mas
 - Your `DbContext` would have repositories added that represent access to each table in your database, as in this [example](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/Contexts/SimpleContext.cs#L32-L43).
 
 ## Working With TUser
-Most applications will have authentication and need to track database operations by user in some way. When you create your `DbContext` object, you must provide a `TUser` that represents the current user. In the tests, I have a very simple [User](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/User.cs) type.
+Most applications will have authentication and need to track database operations by user in some way. When you create your `DbContext` object, you must provide a `TUser` that represents the current user. For example
+- [SimpleContext](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/Contexts/SimpleContext.cs) uses [User](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/User.cs)
+- [RealisticContext](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/Contexts/RealisticContext.cs) uses [UserInfoResult](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/Queries/UserInfo.cs#L10)
+
 
 In your application, you should override [QueryUserAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/DbContext.cs#L48) so that all your user properties are available to crud operations. This is usually necessary for determining permissions or verifying tenant isolation, for example.
 

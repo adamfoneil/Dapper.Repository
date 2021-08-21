@@ -18,7 +18,7 @@ namespace Dapper.Repository.Test.Tests
         [TestMethod]
         public async Task Insert()
         {
-            using var cn = LocalDb.GetConnection(SimpleContext.DbName);
+            using var cn = LocalDb.GetConnection(DataContext.DbName);
             Workspace ws = await InsertWorkspace(cn, "whatever workspace");
 
             Assert.IsTrue(ws.Id != 0);
@@ -42,7 +42,7 @@ namespace Dapper.Repository.Test.Tests
         [TestMethod]
         public async Task Update()
         {
-            using var cn = LocalDb.GetConnection(SimpleContext.DbName);
+            using var cn = LocalDb.GetConnection(DataContext.DbName);
 
             var ws = await InsertWorkspace(cn, "yahooie");
             var id = ws.Id;
@@ -60,7 +60,7 @@ namespace Dapper.Repository.Test.Tests
         [TestMethod]
         public async Task Delete()
         {
-            using var cn = LocalDb.GetConnection(SimpleContext.DbName);
+            using var cn = LocalDb.GetConnection(DataContext.DbName);
             var ws = await InsertWorkspace(cn, "zithra");
             var id = ws.Id;
 

@@ -1,6 +1,6 @@
-﻿using AO.Models.Interfaces;
-using BlazorAO.Models;
+﻿using BlazorAO.Models;
 using Dapper.Repository.SqlServer;
+using Dapper.Repository.Test.Queries;
 using System.Threading.Tasks;
 
 namespace Dapper.Repository.Test.Repositories
@@ -9,9 +9,9 @@ namespace Dapper.Repository.Test.Repositories
     /// Some workarounds needed because dbo.AspNetUsers.Id is a string.
     /// Note that you can't do regular crud operations on this table
     /// </summary>
-    public class UserRepository : Repository<IUserBase, UserProfile, string>
+    public class UserRepository : Repository<UserInfoResult, UserProfile, string>
     {
-        public UserRepository(SqlServerContext<IUserBase> context) : base(context)
+        public UserRepository(SqlServerContext<UserInfoResult> context) : base(context)
         {
         }
         

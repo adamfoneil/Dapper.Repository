@@ -2,11 +2,9 @@ using AO.Models.Static;
 using BlazorAO.Models;
 using Dapper.Repository.SqlServer.Extensions;
 using Dapper.Repository.Test.Contexts;
-using Dapper.Repository.Test.Queries;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.SqlServer;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ModelSync.Models;
 using SqlServer.LocalDb;
@@ -27,7 +25,7 @@ namespace Dapper.Repository.Test.Tests
 
         public static async Task BuildLocalDatabase()
         {
-            using (var cn = LocalDb.GetConnection(SimpleContext.DbName))
+            using (var cn = LocalDb.GetConnection(Contexts.DataContext.DbName))
             {
                 var sample = new Client(); // jiggles the reference collection
                 var assembly = Assembly.GetExecutingAssembly().GetReferencedAssembly("Dapper.Repository.Test.Models");
@@ -63,24 +61,18 @@ namespace Dapper.Repository.Test.Tests
 
         private const string UserName = "adamo";
 
-        private SimpleContext GetSimpleContext()
-        {
-            var logger = LoggerFactory.Create(config => config.AddDebug()).CreateLogger("Testing");
-            return new SimpleContext(UserName, logger);
-        }
-
-        private RealisticContext GetRealisticContext()
+        private DataContext GetContext()
         {
             var logger = LoggerFactory.Create(config => config.AddDebug()).CreateLogger("Testing");
             
-            return new RealisticContext(UserName, GetCache(), logger);
+            return new DataContext(UserName, GetCache(), logger);
         }
 
         private IDistributedCache GetCache()
         {
             var options = new SqlServerCacheOptions()
             {
-                ConnectionString = LocalDb.GetConnectionString(SimpleContext.DbName),
+                ConnectionString = LocalDb.GetConnectionString(DataContext.DbName),
                 SchemaName = "dbo",
                 TableName = "Cache"
             };
@@ -88,15 +80,32 @@ namespace Dapper.Repository.Test.Tests
         }
 
         [TestMethod]
-        public async Task SaveAndDeleteWorkspaceSimple() => await SaveAndDeleteWorkspace(GetSimpleContext());
+        public async Task SaveAndDeleteWorkspace() => await SaveAndDeleteWorkspaceInner(GetContext());        
 
-        [TestMethod]
-        public async Task SaveAndDeleteWorkspaceRealistic() => await SaveAndDeleteWorkspace(GetRealisticContext());
+        private async Task SaveAndDeleteWorkspaceInner(DataContext context)
+        {
+            var ws = await context.Workspaces.SaveAsync(new Workspace()
+            {
+                Name = "sample workspace"
+            });
+
+            Assert.IsTrue(ws.CreatedBy.Equals(UserName));
+
+            ws.StorageContainer = "whatever";
+            await context.Workspaces.SaveAsync(ws);
+
+            ws = await context.Workspaces.GetAsync(ws.Id);
+            Assert.IsTrue(ws.StorageContainer.Equals("whatever"));
+
+            Assert.IsTrue(ws.ModifiedBy.Equals(UserName));
+
+            await context.Workspaces.DeleteAsync(ws);
+        }
 
         [TestMethod]
         public async Task CanUseCache()
         {
-            var context = GetRealisticContext();
+            var context = GetContext();
 
             // store user in cache table (wouldn't do in a real app)
             await context.CacheUserAsync();
@@ -105,7 +114,7 @@ namespace Dapper.Repository.Test.Tests
             context.ClearUser();
 
             // do some normal crud operations, which will cause the user to be queried
-            await SaveAndDeleteWorkspace(context);            
+            await SaveAndDeleteWorkspaceInner(context);            
 
             // and the user should come from the cache source
             Assert.IsTrue(context.ProfileSource == ProfileSourceOptions.Cache);
@@ -114,7 +123,7 @@ namespace Dapper.Repository.Test.Tests
         [TestMethod]
         public async Task CustomIdentity()
         {
-            var context = GetSimpleContext();
+            var context = GetContext();
 
             var insert = SqlBuilder.Insert<UserProfile>(new string[]
             {
@@ -142,7 +151,7 @@ namespace Dapper.Repository.Test.Tests
         [TestMethod]
         public async Task WithValidation()
         {
-            var context = GetSimpleContext();
+            var context = GetContext();
 
             try
             {
@@ -157,26 +166,6 @@ namespace Dapper.Repository.Test.Tests
             {
                 Assert.IsTrue(exc is ValidationException && exc.Message.Equals("Hours must be greater than zero."));
             }
-        }
-
-        private async Task SaveAndDeleteWorkspace(IAppContext context)
-        {
-            var ws = await context.Workspaces.SaveAsync(new Workspace()
-            {
-                Name = "sample workspace"
-            });
-
-            Assert.IsTrue(ws.CreatedBy.Equals(UserName));
-
-            ws.StorageContainer = "whatever";
-            await context.Workspaces.SaveAsync(ws);
-
-            ws = await context.Workspaces.GetAsync(ws.Id);
-            Assert.IsTrue(ws.StorageContainer.Equals("whatever"));            
-
-            Assert.IsTrue(ws.ModifiedBy.Equals(UserName));
-
-            await context.Workspaces.DeleteAsync(ws);
         }
     }
 }

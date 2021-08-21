@@ -13,13 +13,22 @@ using System.Threading.Tasks;
 
 namespace Dapper.Repository.Test.Contexts
 {
-    public class RealisticContext : SqlServerContext<IUserBase>, IAppContext
+    public enum ProfileSourceOptions
+    {
+        Anonymous,
+        Database,
+        Cache
+    }
+
+    public class DataContext : SqlServerContext<UserInfoResult>
     {
         private readonly IDistributedCache _cache;
         // even more realistic use would be AuthenticationStateProvider, but I'm not sure how to make that testable
-        private readonly string _userName; 
+        private readonly string _userName;
 
-        public RealisticContext(string userName, IDistributedCache cache, ILogger logger) : base(LocalDb.GetConnectionString(SimpleContext.DbName), logger)
+        public const string DbName = "DapperRepository";
+
+        public DataContext(string userName, IDistributedCache cache, ILogger logger) : base(LocalDb.GetConnectionString(DbName), logger)
         {
             _cache = cache;
             _userName = userName;
@@ -27,7 +36,7 @@ namespace Dapper.Repository.Test.Contexts
 
         public ProfileSourceOptions ProfileSource { get; private set; }
 
-        protected override async Task<IUserBase> QueryUserAsync(IDbConnection connection)
+        protected override async Task<UserInfoResult> QueryUserAsync(IDbConnection connection)
         {
             ProfileSource = ProfileSourceOptions.Anonymous;
             if (string.IsNullOrEmpty(_userName)) return null;
