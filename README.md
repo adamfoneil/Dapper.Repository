@@ -42,7 +42,18 @@ The [integration tests](https://github.com/adamfoneil/Dapper.Repository/blob/mas
 2. Create a class based on `SqlServerContext<TUser>` that will provide the access point to all your repositories. Example: [DataContext](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/Contexts/DataContext.cs). You pass your database connection string, current user name, and an `ILogger`. My example uses a localdb connection string for test purposes. In a real application, it would typically come from your configuration in some way. Optionally, but most often, you'll need to override [QueryUserInfo](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/Contexts/DataContext.cs#L39) so that you can access properties of the current user in your crud operations. More on this below.
 3. Create a `Repository` class that handles your common data access scenario. Example: [BaseRepository](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/Repositories/BaseRepository.cs). My example assumes an `int` key type, and overrides the [BeforeSaveAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/Repository_virtuals.cs#L41) method to capture user and timestamp info during inserts and updates.
 4. For models that require unique behavior, validation, or trigger-like behavior, create repository classes specifically for them. You would typically inherit from your own `BaseRepository` so as to preserve any existing conventional behavior. Example: [WorkHoursRepository](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/Repositories/WorkHoursRepository.cs). Note, there are many overrides you can implement for various crud events, found [here](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/Repository_virtuals.cs).
-5. Add your repository classes as read-only properties of your `DbContext`, for example [here](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/Contexts/DataContext.cs#L71-L80). Note, I have more model classes than repositories because I'm lazy, and don't need them for a working demo.
+5. Add your repository classes as read-only properties of your `DataContext`, for example [here](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/Contexts/DataContext.cs#L71-L80). Note, I have more model classes than repositories because I'm lazy, and don't need them for a working demo.
+6. Add your `DataContext` object to your `services` collection in startup. A Blazor Server approach might look like this:
+```csharp
+services.AddScoped((sp) =>
+{
+    var authState = sp.GetRequiredService<AuthenticationStateProvider>();                
+    var logger = sp.GetRequiredService<ILogger<DataContext>>();
+    var cache = sp.GetRequiredService<IDistributedCache>();
+    return new DataContext(connectionString, cache, authState, logger);
+});
+```
+Since you create your own `DataContext` object, you can decide what dependencies are useful to pass to it. The `AuthenticationStateProvider` is used to get the current user name during `QueryUserInfo`. The `IDistributedCache` is used to avoid a database roundtrip to get user details, used [here](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/Contexts/DataContext.cs#L44). The `ILogger` is required by the low-level [DbContext](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/DbContext.cs#L9) object. This is so SQL errors have a place to be [logged consistently](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/Repository.cs#L126).
 
 ## Working With TUser
 Most applications will have authentication and need to track database operations by user in some way. When you create your `DbContext` object, you must provide a `TUser` that represents the current user. You also override the [QueryUserAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/DbContext.cs#L48) method, implementing any database query and/or cache access that makes sense in your application.
@@ -118,6 +129,21 @@ public class DataContext : SqlServerContext<UserInfoResult>
     // repository classes follow...
 }
 ```
+A few points to note about the code above:
+- The cache access methods you see `GetItemAsync` and `SetItemAsync` are extensions you can find [here](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/Extensions/DistributedCacheExtensions.cs) that aren't part of the Dapper.Repository package proper.
+- The line `await new UserInfo() { UserName = userName }.ExecuteSingleOrDefaultAsync(connection)` executes a SQL query via a wrapper class `UserInfo`. This functionality comes from my [Dapper.QX](https://github.com/adamfoneil/Dapper.QX) library. The integration tests [here](https://github.com/adamfoneil/Dapper.Repository/tree/master/Dapper.Repository.Test/Queries) use this also.
+
+## Classic Extension Methods
+If you need an easy way to perform CRUD operations on model types without any intermediary business logic, there are some "classic" [extension methods](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions.cs#L9) for this:
+
+- Task\<TModel\> [GetAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions.cs#L11)<TKey>
+ (this IDbConnection connection, TKey id, [ string identityColumn ])
+- Task\<TModel\> [InsertAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions.cs#L14)<TModel>
+ (this IDbConnection connection, TModel model, [ IEnumerable<string> columnNames ], [ string identityColumn ], [ Action<TModel, TKey> afterInsert ])
+- Task [UpdateAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions.cs#L17)<TModel>
+ (this IDbConnection connection, TModel model, [ IEnumerable<string> columnNames ], [ string identityColumn ])
+- Task [DeleteAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions.cs#L20)<TKey>
+ (this IDbConnection connection, TKey id, [ string identityColumn ], [ string tableName ])
 
 ## Background
 I've been critical of the repository pattern in the past because I've seen it lead to verbosity and repeated code. But there's no inherent reason it has to be this way. I'm revisiting this now because my [Dapper.CX](https://github.com/adamfoneil/Dapper.CX) project has been getting complicated. Once again I'm feeling the need to get back to basics, rethink the dependency footprint and my approach to business logic.
@@ -126,3 +152,5 @@ The main issue I'm having with Dapper.CX is that there's not a good place for bu
 
 - The logic for supporting all this custom behavior is embedded in the low-level [CRUD provider](https://github.com/adamfoneil/Dapper.CX/blob/master/Dapper.CX.Base/Abstract/SqlCrudProvider.cs) itself. If you read through this class, you'll see a lot of business-logic-like things in many places for validation, trigger execution, auditing, change tracking, and so on. This is a lot of complexity and coupling where I don't think it belongs.
 - Some of these interfaces like [IGetRelated](https://github.com/adamfoneil/Models/blob/master/Models/Interfaces/IGetRelated.cs), [ITrigger](https://github.com/adamfoneil/Models/blob/master/Models/Interfaces/ITrigger.cs), [IValidate](https://github.com/adamfoneil/Models/blob/master/Models/Interfaces/IValidate.cs) have `IDbConnection` arguments. This forces a database dependency in your model layer. You can avoid this by playing an elaborate game with partial classes and linked source, but this is hard to manage.
+
+Another issue worth mentioning is that the .NET Core integration approach I used in Dapper.CX was a little clumsy the way it queried the current user as [part of the DI setup](https://github.com/adamfoneil/Dapper.CX/wiki/Using-Dapper.CX-with-Dependency-Injection#setting-the-user-property). I've moved that query to the async `QueryUserAsync` virtual method. I've also removed the `IUserBase` requirement from `TUser`. `IUserBase` was meant to ensure that you have access to the user's current local time. That's fine if you want that (and I [use](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/Queries/UserInfo.cs#L18) that in my test app), but there's no requirement for it going forward.
