@@ -17,13 +17,14 @@ namespace Dapper.Repository.Extensions
 
             try
             {
-                return await connection.QuerySingleOrDefaultAsync<TModel>(sql, new { id });
+                var param = new DynamicParameters();
+                param.Add(identityColumn, id);
+                return await connection.QuerySingleOrDefaultAsync<TModel>(sql, param);
             }
             catch (Exception exc)
             {
                 throw new SqlException(exc.Message, sql);
-            }
-            
+            }            
         }
 
         internal static async Task<TModel> InsertAsync<TModel, TKey>(this IDbConnection connection, TModel model, char startDelimiter, char endDelimiter, IEnumerable<string> columnNames = null, string identityColumn = IdentityColumn, string selectIdentityCommand = null, Action<TModel, TKey> afterInsert = null)
@@ -64,7 +65,9 @@ namespace Dapper.Repository.Extensions
 
             try
             {
-                await connection.ExecuteAsync(sql, new { id });
+                var param = new DynamicParameters();
+                param.Add(identityColumn, id);
+                await connection.ExecuteAsync(sql, param);
             }
             catch (Exception exc)
             {
