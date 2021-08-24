@@ -75,7 +75,7 @@ public void ConfigureServices(IServiceCollection services)
         .AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
         .AddEntityFrameworkStores<ApplicationDbContext>();                
 
-    // Blazor boilderplate
+    // Blazor boilerplate
     services.AddRazorPages();
     services.AddServerSideBlazor();
     services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
