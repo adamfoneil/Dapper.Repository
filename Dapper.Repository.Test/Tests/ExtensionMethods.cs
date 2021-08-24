@@ -70,5 +70,15 @@ namespace Dapper.Repository.Test.Tests
             var get = await cn.GetAsync<Workspace, int>(id);
             Assert.IsNull(get);
         }
+
+        [TestMethod]
+        public async Task GetWhere()
+        {
+            using var cn = LocalDb.GetConnection(DataContext.DbName);
+            Workspace ws = await InsertWorkspace(cn, "whatever workspace2");
+
+            ws = await cn.GetWhereAsync<Workspace>(new { name = "whatever workspace2" });
+            Assert.IsTrue(ws != null);
+        }
     }
 }

@@ -11,7 +11,7 @@ namespace Dapper.Repository.Extensions
     {
         public const string IdentityColumn = "Id";
 
-        internal static async Task<TModel> GetAsync<TModel, TKey>(this IDbConnection connection, TKey id, char startDelimiter, char endDelimiter, string identityColumn = IdentityColumn)
+        internal static async Task<TModel> GetAsync<TModel, TKey>(this IDbConnection connection, TKey id, char startDelimiter, char endDelimiter, string identityColumn = IdentityColumn, IDbTransaction txn = null)
         {
             var sql = SqlBuilder.Get<TModel>(startDelimiter, endDelimiter, identityColumn);
 
@@ -19,7 +19,7 @@ namespace Dapper.Repository.Extensions
             {
                 var param = new DynamicParameters();
                 param.Add(identityColumn, id);
-                return await connection.QuerySingleOrDefaultAsync<TModel>(sql, param);
+                return await connection.QuerySingleOrDefaultAsync<TModel>(sql, param, txn);
             }
             catch (Exception exc)
             {
@@ -27,14 +27,28 @@ namespace Dapper.Repository.Extensions
             }            
         }
 
-        internal static async Task<TModel> InsertAsync<TModel, TKey>(this IDbConnection connection, TModel model, char startDelimiter, char endDelimiter, IEnumerable<string> columnNames = null, string identityColumn = IdentityColumn, string selectIdentityCommand = null, Action<TModel, TKey> afterInsert = null)
+        internal static async Task<TModel> GetWhereAsync<TModel>(this IDbConnection connection, object criteria, char startDelimiter, char endDelimiter, IDbTransaction txn = null)
+        {
+            var sql = SqlBuilder.GetWhere<TModel>(criteria, startDelimiter, endDelimiter);
+
+            try
+            {
+                return await connection.QuerySingleOrDefaultAsync<TModel>(sql, criteria, txn);
+            }
+            catch (Exception exc)
+            {
+                throw new SqlException(exc.Message, sql);
+            }
+        }
+
+        internal static async Task<TModel> InsertAsync<TModel, TKey>(this IDbConnection connection, TModel model, char startDelimiter, char endDelimiter, IEnumerable<string> columnNames = null, string identityColumn = IdentityColumn, string selectIdentityCommand = null, Action<TModel, TKey> afterInsert = null, IDbTransaction txn = null)
         {
             var sql = SqlBuilder.Insert<TModel>(columnNames, startDelimiter: startDelimiter, endDelimiter: endDelimiter, identityColumn: identityColumn);
             sql += $"; {selectIdentityCommand}";
 
             try
             {
-                var id = await connection.QuerySingleOrDefaultAsync<TKey>(sql, model);
+                var id = await connection.QuerySingleOrDefaultAsync<TKey>(sql, model, txn);
                 afterInsert?.Invoke(model, id);
             }
             catch (Exception exc)
@@ -45,13 +59,13 @@ namespace Dapper.Repository.Extensions
             return model;                        
         }
 
-        internal static async Task UpdateAsync<TModel>(this IDbConnection connection, TModel model, char startDelimiter, char endDelimiter, IEnumerable<string> columnNames, string identityColumn = IdentityColumn)
+        internal static async Task UpdateAsync<TModel>(this IDbConnection connection, TModel model, char startDelimiter, char endDelimiter, IEnumerable<string> columnNames, string identityColumn = IdentityColumn, IDbTransaction txn = null)
         {
             var sql = SqlBuilder.Update<TModel>(columnNames, startDelimiter: startDelimiter, endDelimiter: endDelimiter, identityColumn: identityColumn);
 
             try
             {
-                await connection.ExecuteAsync(sql, model);
+                await connection.ExecuteAsync(sql, model, txn);
             }
             catch (Exception exc)
             {
@@ -59,7 +73,7 @@ namespace Dapper.Repository.Extensions
             }            
         }
 
-        internal static async Task DeleteAsync<TModel, TKey>(this IDbConnection connection, TKey id, char startDelimiter, char endDelimiter, string identityColumn = IdentityColumn, string tableName = null)
+        internal static async Task DeleteAsync<TModel, TKey>(this IDbConnection connection, TKey id, char startDelimiter, char endDelimiter, string identityColumn = IdentityColumn, string tableName = null, IDbTransaction txn = null)
         {
             var sql = SqlBuilder.Delete<TModel>(startDelimiter, endDelimiter, identityColumn, tableName);
 
@@ -67,7 +81,7 @@ namespace Dapper.Repository.Extensions
             {
                 var param = new DynamicParameters();
                 param.Add(identityColumn, id);
-                await connection.ExecuteAsync(sql, param);
+                await connection.ExecuteAsync(sql, param, txn);
             }
             catch (Exception exc)
             {
