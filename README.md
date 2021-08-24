@@ -134,16 +134,20 @@ A few points to note about the code above:
 - The line `await new UserInfo() { UserName = userName }.ExecuteSingleOrDefaultAsync(connection)` executes a SQL query via a wrapper class `UserInfo`. This functionality comes from my [Dapper.QX](https://github.com/adamfoneil/Dapper.QX) library. The integration tests [here](https://github.com/adamfoneil/Dapper.Repository/tree/master/Dapper.Repository.Test/Queries) use this also.
 
 ## Classic Extension Methods
-If you need an easy way to perform CRUD operations on model types without any intermediary business logic, there are some "classic" [extension methods](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions.cs#L9) for this:
+If you need an easy way to perform CRUD operations on model types without any intermediary business logic, there are some "classic" [extension methods](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions) for this:
 
-- Task\<TModel\> [GetAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions.cs#L11)<TKey>
- (this IDbConnection connection, TKey id, [ string identityColumn ])
-- Task\<TModel\> [InsertAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions.cs#L14)<TModel>
- (this IDbConnection connection, TModel model, [ IEnumerable<string> columnNames ], [ string identityColumn ], [ Action<TModel, TKey> afterInsert ])
-- Task [UpdateAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions.cs#L17)<TModel>
- (this IDbConnection connection, TModel model, [ IEnumerable<string> columnNames ], [ string identityColumn ])
-- Task [DeleteAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions.cs#L20)<TKey>
- (this IDbConnection connection, TKey id, [ string identityColumn ], [ string tableName ])
+- Task\<TModel\> [GetAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions.cs#L15)<TKey>
+ (this IDbConnection connection, TKey id, [ string identityColumn ], [ IDbTransaction txn ])
+- Task\<TModel\> [GetWhereAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions.cs#L18)
+ (this IDbConnection connection, object criteria, [ IDbTransaction txn ])
+- Task\<TModel\> [InsertAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions.cs#L21)<TModel>
+ (this IDbConnection connection, TModel model, [ IEnumerable<string> columnNames ], [ string identityColumn ], [ Action<TModel, TKey> afterInsert ], [ IDbTransaction txn ])
+- Task [UpdateAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions.cs#L24)<TModel>
+ (this IDbConnection connection, TModel model, [ IEnumerable<string> columnNames ], [ string identityColumn ], [ IDbTransaction txn ])
+- Task [DeleteAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions.cs#L27)<TKey>
+ (this IDbConnection connection, TKey id, [ string identityColumn ], [ string tableName ], [ IDbTransaction txn ])
+- Task\<TModel\> [SaveAynsc](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions.cs#L30)<TModel>
+ (this IDbConnection connection, TModel model, IEnumerable<string> columnNames, [ string identityColumn ], [ IDbTransaction txn ]) where `TModel` : `IModel<TKey>`
 
 ## Background
 I've been critical of the repository pattern in the past because I've seen it lead to verbosity and repeated code. But there's no inherent reason it has to be this way. I'm revisiting this now because my [Dapper.CX](https://github.com/adamfoneil/Dapper.CX) project has been getting complicated. Once again I'm feeling the need to get back to basics, rethink the dependency footprint and my approach to business logic.
