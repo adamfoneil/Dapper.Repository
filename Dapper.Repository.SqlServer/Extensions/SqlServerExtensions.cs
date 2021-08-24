@@ -27,7 +27,7 @@ namespace Dapper.Repository.SqlServer.Extensions
         public static async Task DeleteAsync<TModel, TKey>(this IDbConnection connection, TKey id, string identityColumn = CrudExtensionsBase.IdentityColumn, string tableName = null, IDbTransaction txn = null) =>
             await CrudExtensionsBase.DeleteAsync<TModel, TKey>(connection, id, StartDelimiter, EndDelimiter, identityColumn, tableName, txn);
 
-        public static async Task<TModel> SaveAynsc<TModel, TKey>(this IDbConnection connection, TModel model, IEnumerable<string> columnNames, string identityColumn = CrudExtensionsBase.IdentityColumn, IDbTransaction txn = null) where TModel : IModel<TKey>
+        public static async Task<TModel> SaveAsync<TModel, TKey>(this IDbConnection connection, TModel model, IEnumerable<string> columnNames, string identityColumn = CrudExtensionsBase.IdentityColumn, IDbTransaction txn = null) where TModel : IModel<TKey>
         {
             if (model.Id.Equals(default(TKey)))
             {
