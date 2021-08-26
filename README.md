@@ -135,7 +135,7 @@ A few points to note about the code above:
 - The line `await new UserInfo() { UserName = userName }.ExecuteSingleOrDefaultAsync(connection)` executes a SQL query via a wrapper class `UserInfo`. This functionality comes from my [Dapper.QX](https://github.com/adamfoneil/Dapper.QX) library. The integration tests [here](https://github.com/adamfoneil/Dapper.Repository/tree/master/Dapper.Repository.Test/Queries) use this also.
 
 ## Classic Extension Methods
-If you need an easy way to perform CRUD operations on model types without any intermediary business logic, there are some "classic" [extension methods](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions.cs) for this:
+If you need an easy way to perform CRUD operations on model types without any intermediary business logic, there are some "classic" [extension methods](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions.cs) for this. Most of these do not require `IModel` except for `SaveAsync`:
 
 - Task\<TModel\> [GetAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions.cs#L15)<TKey>
  (this IDbConnection connection, TKey id, [ string identityColumn ], [ IDbTransaction txn ])
