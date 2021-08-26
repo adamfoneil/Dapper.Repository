@@ -4,6 +4,7 @@
 This library lets you write data access code that offers:
 - an IoC-friendly single point of access to all your repository classes, keeping your constructors simple throughout your application
 - a way to implement model-wide conventions along with table-specific business logic where needed
+- connection [extension methods](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions.cs) for simple entity access
 - efficient, typed user profile access
 
 To implement, bear in mind:
