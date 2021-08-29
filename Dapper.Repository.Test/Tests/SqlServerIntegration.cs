@@ -167,5 +167,24 @@ namespace Dapper.Repository.Test.Tests
                 Assert.IsTrue(exc is ValidationException && exc.Message.Equals("Hours must be greater than zero."));
             }
         }
+
+        [TestMethod]
+        public async Task Merge()
+        {
+            var context = GetContext();
+
+            var ws = await context.Workspaces.MergeAsync(new Workspace()
+            {
+                Name = "sample-ws"
+            });
+
+            var client = await context.Clients.MergeAsync(new Client()
+            {
+                WorkspaceId = ws.Id,
+                Name = "hello client"
+            });
+
+            Assert.IsTrue(client != null);
+        }
     }
 }

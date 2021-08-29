@@ -103,7 +103,7 @@ namespace Dapper.Repository
             TModel existing;
             if (IsNew(model))
             {
-                var keyProperties = GetKeyProperties(model);
+                var keyProperties = GetKeyProperties(model).Select(pi => pi.Name);
                 var sql = SqlBuilder.GetWhere(typeof(TModel), keyProperties, Context.StartDelimiter, Context.EndDelimiter);
                 existing = await GetInnerAsync(sql, model, txn);
                 if (existing != null) model.Id = existing.Id;
