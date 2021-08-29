@@ -98,7 +98,7 @@ namespace Dapper.Repository
             await AfterDeleteAsync(cn, model, txn);
         }
 
-        public async virtual Task<TModel> MergeAsync(TModel model, IDbTransaction txn = null)
+        public async virtual Task<TModel> MergeAsync(TModel model, Action<TModel, TModel> onExisting = null, IDbTransaction txn = null)
         {
             TModel existing;
             if (IsNew(model))
@@ -106,7 +106,11 @@ namespace Dapper.Repository
                 var keyProperties = GetKeyProperties(model).Select(pi => pi.Name);
                 var sql = SqlBuilder.GetWhere(typeof(TModel), keyProperties, Context.StartDelimiter, Context.EndDelimiter);
                 existing = await GetInnerAsync(sql, model, txn);
-                if (existing != null) model.Id = existing.Id;
+                if (existing != null)
+                {
+                    model.Id = existing.Id;
+                    onExisting?.Invoke(model, existing);
+                }
             }
 
             return await SaveAsync(model, txn: txn);
