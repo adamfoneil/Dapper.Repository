@@ -104,6 +104,7 @@ namespace Dapper.Repository
             if (IsNew(model))
             {
                 var keyProperties = GetKeyProperties(model).Select(pi => pi.Name);
+                if (!keyProperties.Any()) throw new Exception($"To use MergeAsync with type {typeof(TModel).Name}, it must have at least one property with the [Key] attribute.");
                 var sql = SqlBuilder.GetWhere(typeof(TModel), keyProperties, Context.StartDelimiter, Context.EndDelimiter);
                 existing = await GetInnerAsync(sql, model, txn);
                 if (existing != null)
