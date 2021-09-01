@@ -1,4 +1,5 @@
 ﻿using AO.Models.Interfaces;
+using Dapper.Repository.Exceptions;
 using Dapper.Repository.Extensions;
 using System;
 using System.Collections.Generic;
@@ -36,6 +37,35 @@ namespace Dapper.Repository.SqlServer.Extensions
 
             await UpdateAsync(connection, model, columnNames, identityColumn, txn);
             return model;
+        }
+
+        public static async Task<TModel> MergeAsync<TModel, TKey>(this IDbConnection connection, TModel model, Action<TModel, TModel> onExisting = null, IDbTransaction txn = null) where TModel : IModel<TKey>
+        {
+            TModel existing;
+            if (model.Id.Equals(default(TKey)))
+            {
+                var sql = CrudExtensionsBase.BuildMergeGetCommand(model, StartDelimiter, EndDelimiter);
+                existing = await GetInnerAsync(sql, model);
+                if (existing != null)
+                {
+                    model.Id = existing.Id;
+                    onExisting?.Invoke(model, existing);
+                }
+            }
+
+            return await SaveAsync<TModel, TKey>(connection, model, txn: txn);
+
+            async Task<TModel> GetInnerAsync(string sql, object parameters)
+            {
+                try
+                {
+                    return await connection.QuerySingleOrDefaultAsync<TModel>(sql, parameters, txn);
+                }
+                catch (Exception exc)
+                {
+                    throw new SqlException(exc.Message, sql, parameters);
+                }
+            }
         }
     }
 }

@@ -2,7 +2,10 @@
 using Dapper.Repository.Exceptions;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Data;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Dapper.Repository.Extensions
@@ -88,5 +91,19 @@ namespace Dapper.Repository.Extensions
                 throw new SqlException(exc.Message, sql);
             }            
         }            
-    }
+
+        internal static string BuildMergeGetCommand<TModel>(TModel model, char startDelimiter, char endDelimiter)
+        {
+            var keyProperties = GetKeyProperties(model).Select(pi => pi.Name);
+            if (!keyProperties.Any()) throw new Exception($"To use MergeAsync with type {typeof(TModel).Name}, it must have at least one property with the [Key] attribute.");
+            return SqlBuilder.GetWhere(typeof(TModel), keyProperties, startDelimiter, endDelimiter);
+        }
+
+        private static IEnumerable<PropertyInfo> GetKeyProperties<TModel>(TModel model) =>
+            model.GetType().GetProperties().Where(pi =>
+            {
+                var attr = pi.GetCustomAttribute(typeof(KeyAttribute));
+                return attr != null;
+            });
+    }    
 }

@@ -2,6 +2,7 @@
 using AO.Models.Interfaces;
 using AO.Models.Static;
 using Dapper.Repository.Exceptions;
+using Dapper.Repository.Extensions;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -103,9 +104,7 @@ namespace Dapper.Repository
             TModel existing;
             if (IsNew(model))
             {
-                var keyProperties = GetKeyProperties(model).Select(pi => pi.Name);
-                if (!keyProperties.Any()) throw new Exception($"To use MergeAsync with type {typeof(TModel).Name}, it must have at least one property with the [Key] attribute.");
-                var sql = SqlBuilder.GetWhere(typeof(TModel), keyProperties, Context.StartDelimiter, Context.EndDelimiter);
+                var sql = CrudExtensionsBase.BuildMergeGetCommand(model, Context.StartDelimiter, Context.EndDelimiter);
                 existing = await GetInnerAsync(sql, model, txn);
                 if (existing != null)
                 {
@@ -116,13 +115,6 @@ namespace Dapper.Repository
 
             return await SaveAsync(model, txn: txn);
         }
-
-        private IEnumerable<PropertyInfo> GetKeyProperties(TModel model) =>
-            model.GetType().GetProperties().Where(pi =>
-            {
-                var attr = pi.GetCustomAttribute(typeof(KeyAttribute));
-                return attr != null;
-            });
 
         protected virtual bool IsNew(TModel model) => model.Id.Equals(default(TKey));
 

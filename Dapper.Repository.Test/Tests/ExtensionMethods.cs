@@ -75,10 +75,44 @@ namespace Dapper.Repository.Test.Tests
         public async Task GetWhere()
         {
             using var cn = LocalDb.GetConnection(DataContext.DbName);
+            await DeleteWhatevers(cn);
+
             Workspace ws = await InsertWorkspace(cn, "whatever workspace2");
 
             ws = await cn.GetWhereAsync<Workspace>(new { name = "whatever workspace2" });
             Assert.IsTrue(ws != null);
+        }
+
+        [TestMethod]
+        public async Task Merge()
+        {
+            using var cn = LocalDb.GetConnection(DataContext.DbName);
+            await DeleteWhatevers(cn);
+
+            const string WsName = "whatever workspace3";
+
+            // should insert
+            var ws = await cn.MergeAsync<Workspace, int>(new Workspace()
+            {
+                Name = WsName,
+                CreatedBy = "adamo",
+                DateCreated = DateTime.Now
+            });
+
+            // should update
+            ws = await cn.MergeAsync<Workspace, int>(new Workspace()
+            {
+                Name = WsName,
+                StorageContainer = "hello"
+            });
+
+            ws = await cn.GetWhereAsync<Workspace>(new { name = WsName });
+            Assert.IsTrue(ws.StorageContainer.Equals("hello"));
+        }
+
+        private static async Task DeleteWhatevers(SqlConnection cn)
+        {
+            await cn.ExecuteAsync("DELETE [dbo].[Workspace] WHERE [Name] LIKE 'whatever%'");
         }
     }
 }
