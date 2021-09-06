@@ -1,4 +1,4 @@
-﻿using AO.Models.Interfaces;
+﻿using AO.Models.Enums;
 using BlazorAO.Models;
 using Dapper.Repository.SqlServer;
 using Dapper.Repository.Test.Queries;
@@ -13,7 +13,7 @@ namespace Dapper.Repository.Test.Repositories
         {
         }
 
-        protected override async Task<(bool result, string message)> ValidateAsync(IDbConnection connection, WorkHours model, IDbTransaction txn = null)
+        protected override async Task<(bool result, string message)> ValidateAsync(IDbConnection connection, SaveAction action, WorkHours model, IDbTransaction txn = null)
         {
             await Task.CompletedTask;
 
