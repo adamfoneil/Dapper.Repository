@@ -52,7 +52,7 @@ namespace Dapper.Repository
 
             var cn = Context.GetConnection();
             
-            var validation = await ValidateAsync(cn, model, txn);
+            var validation = await ValidateAsync(cn, action, model, txn);
             if (!validation.result) throw new ValidationException(validation.message);
 
             await BeforeSaveAsync(cn, action, model);

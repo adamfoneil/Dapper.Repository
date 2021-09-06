@@ -32,7 +32,7 @@ namespace Dapper.Repository
         /// <summary>
         /// override this to validate a model prior to saving
         /// </summary>
-        protected async virtual Task<(bool result, string message)> ValidateAsync(IDbConnection connection, TModel model, IDbTransaction txn = null)
+        protected async virtual Task<(bool result, string message)> ValidateAsync(IDbConnection connection, SaveAction action, TModel model, IDbTransaction txn = null)
         {
             await Task.CompletedTask;
             return (true, null);
