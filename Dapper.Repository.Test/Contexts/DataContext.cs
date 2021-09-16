@@ -69,9 +69,9 @@ namespace Dapper.Repository.Test.Contexts
         }
 
         public BaseRepository<Workspace> Workspaces => new BaseRepository<Workspace>(this);
-        public BaseRepository<Client> Clients => new BaseRepository<Client>(this);
-        public BaseRepository<Job> Jobs => new BaseRepository<Job>(this);
+        public BaseRepository<Client> Clients => new BaseRepository<Client>(this);        
         public BaseRepository<Budget> Budgets => new BaseRepository<Budget>(this);
+        public JobRepository Jobs => new JobRepository(this);
 
         // because dbo.AspNetUsers insists on doing its own thing
         public UserRepository Users => new UserRepository(this);

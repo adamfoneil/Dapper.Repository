@@ -29,13 +29,13 @@ namespace Dapper.Repository
 
         public async virtual Task<TModel> GetAsync(TKey id, IDbTransaction txn = null)
         {
-            var sql = SqlBuilder.Get<TModel>(Context.StartDelimiter, Context.EndDelimiter);
+            var sql = SqlGet ?? SqlBuilder.Get<TModel>(Context.StartDelimiter, Context.EndDelimiter);
             return await GetInnerAsync(sql, new { id }, txn);
         }
 
         public async virtual Task<TModel> GetWhereAsync(object criteria, IDbTransaction txn = null)
         {
-            var sql = SqlBuilder.GetWhere<TModel>(criteria, Context.StartDelimiter, Context.EndDelimiter);
+            var sql = SqlGetWhere ?? SqlBuilder.GetWhere<TModel>(criteria, Context.StartDelimiter, Context.EndDelimiter);
             return await GetInnerAsync(sql, criteria, txn);
         }
 

@@ -6,6 +6,10 @@ namespace Dapper.Repository
 {
     public partial class Repository<TUser, TModel, TKey>
     {
+        protected virtual string SqlGet { get; }
+
+        protected virtual string SqlGetWhere { get; } 
+
         /// <summary>
         /// override this to populate "navigation properties" of your model row
         /// </summary>

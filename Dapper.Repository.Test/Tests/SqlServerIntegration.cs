@@ -186,5 +186,33 @@ namespace Dapper.Repository.Test.Tests
 
             Assert.IsTrue(client != null);
         }
+
+        [TestMethod]
+        public async Task CustomSqlGet()
+        {            
+            var context = GetContext();
+
+            var ws = await context.Workspaces.MergeAsync(new Workspace()
+            {
+                Name = "sample-ws"
+            });
+
+            var client = await context.Clients.MergeAsync(new Client()
+            {
+                WorkspaceId = ws.Id,
+                Name = "hello client"
+            });
+
+            var job = await context.Jobs.MergeAsync(new Job()
+            {
+                ClientId = client.Id,
+                Name = "hello job"
+            });
+
+            job = await context.Jobs.GetAsync(job.Id);
+
+            // if this has a value, it's because the SQL was overridden internally in the repo class as expected
+            Assert.IsTrue(job.ClientName.Equals("hello client"));            
+        }
     }
 }
