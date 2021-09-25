@@ -8,7 +8,11 @@ namespace Dapper.Repository
     {
         protected virtual string SqlGet { get; }
 
-        protected virtual string SqlGetWhere { get; } 
+        protected virtual string SqlDelete { get; }
+
+        protected virtual string SqlGetWhere { get; }
+
+        protected virtual object SqlIdParameter(TKey id) => new { id };
 
         /// <summary>
         /// override this to populate "navigation properties" of your model row

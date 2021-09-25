@@ -30,7 +30,7 @@ namespace Dapper.Repository
         public async virtual Task<TModel> GetAsync(TKey id, IDbTransaction txn = null)
         {
             var sql = SqlGet ?? SqlBuilder.Get<TModel>(Context.StartDelimiter, Context.EndDelimiter);
-            return await GetInnerAsync(sql, new { id }, txn);
+            return await GetInnerAsync(sql, SqlIdParameter(id), txn);
         }
 
         public async virtual Task<TModel> GetWhereAsync(object criteria, IDbTransaction txn = null)
@@ -85,11 +85,11 @@ namespace Dapper.Repository
 
             await BeforeDeleteAsync(cn, model, txn);
 
-            var sql = SqlBuilder.Delete<TModel>(Context.StartDelimiter, Context.EndDelimiter);
+            var sql = SqlDelete ?? SqlBuilder.Delete<TModel>(Context.StartDelimiter, Context.EndDelimiter);
 
             try
             {
-                await cn.ExecuteAsync(sql, new { id = model.Id }, txn);
+                await cn.ExecuteAsync(sql, SqlIdParameter(model.Id), txn);
             }
             catch (Exception exc)
             {
