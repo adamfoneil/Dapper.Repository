@@ -39,7 +39,7 @@ namespace Dapper.Repository.SqlServer.Extensions
             return model;
         }
 
-        public static async Task<TModel> MergeAsync<TModel, TKey>(this IDbConnection connection, TModel model, Action<TModel, TModel> onExisting = null, IDbTransaction txn = null) where TModel : IModel<TKey>
+        public static async Task<TModel> MergeAsync<TModel, TKey>(this IDbConnection connection, TModel model, Action<TModel> onExisting = null, IDbTransaction txn = null) where TModel : IModel<TKey>
         {
             TModel existing;
             if (model.Id.Equals(default(TKey)))
@@ -49,7 +49,7 @@ namespace Dapper.Repository.SqlServer.Extensions
                 if (existing != null)
                 {
                     model.Id = existing.Id;
-                    onExisting?.Invoke(model, existing);
+                    onExisting?.Invoke(existing);
                 }
             }
 
