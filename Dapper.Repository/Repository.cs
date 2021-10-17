@@ -153,7 +153,10 @@ namespace Dapper.Repository
             var allow = await AllowGetAsync(cn, result, txn);
             if (!allow.result) throw new PermissionException($"Get permission was denied: {allow.message}");
 
-            await GetRelatedAsync(cn, result, txn);
+            if (result is not null)
+            {
+                await GetRelatedAsync(cn, result, txn);
+            }            
 
             return result;
         }
