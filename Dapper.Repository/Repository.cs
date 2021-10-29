@@ -120,7 +120,7 @@ namespace Dapper.Repository
 
         private SaveAction GetSaveAction(TModel model) => IsNew(model) ? SaveAction.Insert : SaveAction.Update;
 
-        private SqlException GetSqlException(Exception exception, string sql, object model, [CallerMemberName] string methodName = null)
+        private QueryException GetSqlException(Exception exception, string sql, object model, [CallerMemberName] string methodName = null)
         {
             Logger?.LogError(exception, JsonSerializer.Serialize(new
             {
@@ -130,7 +130,7 @@ namespace Dapper.Repository
                 methodName
             }));
 
-            return new SqlException(exception.Message, sql, model);
+            return new QueryException(exception.Message, sql, model);
         }
 
         private async Task<TModel> GetInnerAsync(string sql, object parameters, IDbTransaction txn = null)

@@ -26,7 +26,7 @@ namespace Dapper.Repository.Extensions
             }
             catch (Exception exc)
             {
-                throw new SqlException(exc.Message, sql);
+                throw new QueryException(exc.Message, sql);
             }            
         }
 
@@ -40,7 +40,7 @@ namespace Dapper.Repository.Extensions
             }
             catch (Exception exc)
             {
-                throw new SqlException(exc.Message, sql);
+                throw new QueryException(exc.Message, sql);
             }
         }
 
@@ -56,7 +56,7 @@ namespace Dapper.Repository.Extensions
             }
             catch (Exception exc)
             {
-                throw new SqlException(exc.Message, sql, model);
+                throw new QueryException(exc.Message, sql, model);
             }
 
             return model;                        
@@ -72,7 +72,7 @@ namespace Dapper.Repository.Extensions
             }
             catch (Exception exc)
             {
-                throw new SqlException(exc.Message, sql, model);
+                throw new QueryException(exc.Message, sql, model);
             }            
         }
 
@@ -88,7 +88,7 @@ namespace Dapper.Repository.Extensions
             }
             catch (Exception exc)
             {
-                throw new SqlException(exc.Message, sql);
+                throw new QueryException(exc.Message, sql);
             }            
         }            
 

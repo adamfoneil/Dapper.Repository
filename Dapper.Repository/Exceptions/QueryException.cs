@@ -3,12 +3,12 @@ using System.Text.Json;
 
 namespace Dapper.Repository.Exceptions
 {
-    public class SqlException : Exception
+    public class QueryException : Exception
     {
         private const string modelKey = "model";
         private const string sqlKey = "sql";
 
-        public SqlException(string message, string sql, object model = null) : base(message)
+        public QueryException(string message, string sql, object model = null) : base(message)
         {
             Data.Add(sqlKey, sql);
 
