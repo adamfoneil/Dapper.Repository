@@ -8,9 +8,15 @@ namespace Dapper.Repository
     {
         protected virtual string SqlGet { get; }
 
+        protected virtual CommandType SqlGetCommandType => CommandType.Text;
+
         protected virtual string SqlDelete { get; }
 
+        protected virtual CommandType SqlDeleteCommandType => CommandType.Text;
+
         protected virtual string SqlGetWhere { get; }
+
+        protected virtual CommandType SqlGetWhereCommandType => CommandType.Text;
 
         protected virtual object SqlIdParameter(TKey id) => new { id };
 

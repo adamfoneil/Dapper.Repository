@@ -8,8 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
-using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -30,13 +28,13 @@ namespace Dapper.Repository
         public async virtual Task<TModel> GetAsync(TKey id, IDbTransaction txn = null)
         {
             var sql = SqlGet ?? SqlBuilder.Get<TModel>(Context.StartDelimiter, Context.EndDelimiter);
-            return await GetInnerAsync(sql, SqlIdParameter(id), txn);
+            return await GetInnerAsync(sql, SqlIdParameter(id), SqlGetCommandType, txn);
         }
 
         public async virtual Task<TModel> GetWhereAsync(object criteria, IDbTransaction txn = null)
         {
             var sql = SqlGetWhere ?? SqlBuilder.GetWhere<TModel>(criteria, Context.StartDelimiter, Context.EndDelimiter);
-            return await GetInnerAsync(sql, criteria, txn);
+            return await GetInnerAsync(sql, criteria, SqlGetWhereCommandType, txn);
         }
 
         public async virtual Task<TModel> SaveAsync(TModel model, IEnumerable<string> columnNames = null, IDbTransaction txn = null)
@@ -89,7 +87,7 @@ namespace Dapper.Repository
 
             try
             {
-                await cn.ExecuteAsync(sql, SqlIdParameter(model.Id), txn);
+                await cn.ExecuteAsync(sql, SqlIdParameter(model.Id), commandType: SqlDeleteCommandType, transaction: txn);
             }
             catch (Exception exc)
             {
@@ -105,7 +103,7 @@ namespace Dapper.Repository
             if (IsNew(model))
             {
                 var sql = CrudExtensionsBase.BuildMergeGetCommand(model, Context.StartDelimiter, Context.EndDelimiter);
-                existing = await GetInnerAsync(sql, model, txn);
+                existing = await GetInnerAsync(sql, model, CommandType.Text, txn);
                 if (existing != null)
                 {
                     model.Id = existing.Id;
@@ -133,7 +131,7 @@ namespace Dapper.Repository
             return new QueryException(exception.Message, sql, model);
         }
 
-        private async Task<TModel> GetInnerAsync(string sql, object parameters, IDbTransaction txn = null)
+        private async Task<TModel> GetInnerAsync(string sql, object parameters, CommandType commandType, IDbTransaction txn = null)
         {
             await Context.GetUserAsync();
 
@@ -143,7 +141,7 @@ namespace Dapper.Repository
 
             try
             {
-                result = await cn.QuerySingleOrDefaultAsync<TModel>(sql, parameters, txn);
+                result = await cn.QuerySingleOrDefaultAsync<TModel>(sql, parameters, commandType: commandType, transaction: txn);
             }
             catch (Exception exc)
             {
