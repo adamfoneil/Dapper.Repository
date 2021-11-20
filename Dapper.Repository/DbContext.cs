@@ -12,7 +12,7 @@ namespace Dapper.Repository
         }
 
         public ILogger Logger { get; }
-        public TUser User { get; internal set; }
+        public TUser User { get; set; }
 
         public abstract IDbConnection GetConnection();
         public abstract char StartDelimiter { get; }
