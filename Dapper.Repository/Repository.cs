@@ -87,7 +87,9 @@ namespace Dapper.Repository
 
             try
             {
-                await cn.ExecuteAsync(sql, SqlIdParameter(model.Id), commandType: SqlDeleteCommandType, transaction: txn);
+                await cn.ExecuteAsync(sql, 
+                    SqlIdDeleteParameter(model.Id) ?? SqlIdParameter(model.Id), 
+                    commandType: SqlDeleteCommandType, transaction: txn);
             }
             catch (Exception exc)
             {

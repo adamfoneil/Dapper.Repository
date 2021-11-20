@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Authors>Adam O'Neil</Authors>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>AO.Dapper.Repository.SqlServer</PackageId>
@@ -10,9 +10,9 @@
     <PackageProjectUrl>https://github.com/adamfoneil/Dapper.Repository</PackageProjectUrl>
     <RepositoryUrl>https://github.com/adamfoneil/Dapper.Repository</RepositoryUrl>
     <PackageTags>dapper sql-server crud repository-pattern</PackageTags>
-    <Description>A Dapper-based repository library targeting SQL Server and .NET 5</Description>
-    <Version>1.1.16</Version>
-    <PackageReleaseNotes>https://github.com/adamfoneil/Dapper.Repository/issues/8</PackageReleaseNotes>
+    <Description>A Dapper-based repository library targeting SQL Server and .NET6</Description>
+    <Version>1.2.0</Version>
+    <PackageReleaseNotes>Now targeting .NET6</PackageReleaseNotes>
     <Copyright>Copyright (c) 2021 Adam O'Neil</Copyright>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>

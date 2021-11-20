@@ -20,6 +20,8 @@ namespace Dapper.Repository
 
         protected virtual object SqlIdParameter(TKey id) => new { id };
 
+        protected virtual object SqlIdDeleteParameter(TKey id) => null;
+
         /// <summary>
         /// override this to populate "navigation properties" of your model row
         /// </summary>
