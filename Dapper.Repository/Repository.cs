@@ -58,6 +58,7 @@ namespace Dapper.Repository
             TKey result;
             try
             {
+                Logger.LogInformation($"{sql} with {model}");
                 result = await cn.QuerySingleOrDefaultAsync<TKey>(sql, model, txn);
             }
             catch (Exception exc)
@@ -87,9 +88,10 @@ namespace Dapper.Repository
 
             try
             {
-                await cn.ExecuteAsync(sql, 
-                    SqlIdDeleteParameter(model.Id) ?? SqlIdParameter(model.Id), 
-                    commandType: SqlDeleteCommandType, transaction: txn);
+                var param = SqlIdDeleteParameter(model.Id) ?? SqlIdParameter(model.Id);
+                Logger.LogInformation($"{sql} with {param}");
+
+                await cn.ExecuteAsync(sql, param, commandType: SqlDeleteCommandType, transaction: txn);
             }
             catch (Exception exc)
             {
