@@ -94,6 +94,8 @@ namespace Dapper.Repository.Test.Tests
             ws.StorageContainer = "whatever";
             await context.Workspaces.SaveAsync(ws);
 
+            Assert.IsTrue(ws.Id != 0);
+
             ws = await context.Workspaces.GetAsync(ws.Id);
             Assert.IsTrue(ws.StorageContainer.Equals("whatever"));
 
