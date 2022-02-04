@@ -11,8 +11,8 @@
     <RepositoryUrl>https://github.com/adamfoneil/Dapper.Repository</RepositoryUrl>
     <PackageTags>dapper sql-server crud repository-pattern</PackageTags>
     <Description>A Dapper-based repository library targeting SQL Server and .NET6</Description>
-    <Version>1.2.2</Version>
-    <PackageReleaseNotes>save and delete SQL logging</PackageReleaseNotes>
+    <Version>1.2.3</Version>
+    <PackageReleaseNotes>simplified Merge onExisting delegate</PackageReleaseNotes>
     <Copyright>Copyright (c) 2021 Adam O'Neil</Copyright>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>

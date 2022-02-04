@@ -101,7 +101,7 @@ namespace Dapper.Repository
             await AfterDeleteAsync(cn, model, txn);
         }
 
-        public async virtual Task<TModel> MergeAsync(TModel model, Action<TModel, TModel> onExisting = null, IDbTransaction txn = null)
+        public async virtual Task<TModel> MergeAsync(TModel model, Action<TModel> onExisting = null, IDbTransaction txn = null)
         {
             TModel existing;
             if (IsNew(model))
@@ -111,7 +111,7 @@ namespace Dapper.Repository
                 if (existing != null)
                 {
                     model.Id = existing.Id;
-                    onExisting?.Invoke(model, existing);
+                    onExisting?.Invoke(existing);
                 }
             }
 
