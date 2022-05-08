@@ -53,7 +53,7 @@ namespace Dapper.Repository.Test.Tests
 
             await cn.UpdateAsync("dbo.Workspace", new Dictionary<string, object>()
             {
-                ["Name"] = "hello workspace",
+                ["Name"] = "hello workspace1",
                 ["NextInvoice"] = 1020,
                 ["StorageContainer"] = "this container",
                 ["Id"] = ws.Id
@@ -61,7 +61,7 @@ namespace Dapper.Repository.Test.Tests
 
             ws = await cn.GetAsync<Workspace, int>(ws.Id);
 
-            Assert.IsTrue(ws.Name.Equals("hello workspace"));
+            Assert.IsTrue(ws.Name.Equals("hello workspace1"));
             Assert.IsTrue(ws.NextInvoice.Equals(1020));
             Assert.IsTrue(ws.StorageContainer.Equals("this container"));
         }
