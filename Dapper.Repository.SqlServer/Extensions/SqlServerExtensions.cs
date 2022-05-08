@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Dapper.Repository.SqlServer.Extensions
 {
-    public static class SqlServerExtensions
+    public static partial class SqlServerExtensions
     {
         private const char StartDelimiter = '[';
         private const char EndDelimiter = ']';

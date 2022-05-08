@@ -5,6 +5,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlServer.LocalDb;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Dapper.Repository.Test.Tests
@@ -22,6 +23,47 @@ namespace Dapper.Repository.Test.Tests
             Workspace ws = await InsertWorkspace(cn, "whatever workspace");
 
             Assert.IsTrue(ws.Id != 0);
+        }
+
+        [TestMethod]
+        public async Task InsertWithDictionary()
+        {
+            using var cn = LocalDb.GetConnection(DataContext.DbName);
+            var id = await cn.InsertAsync("dbo.Workspace", new Dictionary<string, object>()
+            {
+                ["Name"] = "hello workspace",
+                ["NextInvoice"] = 1020,
+                ["StorageContainer"] = "this container",
+                ["CreatedBy"] = "test",
+                ["DateCreated"] = DateTime.Now
+            });            
+
+            var ws = await cn.GetAsync<Workspace, int>(Convert.ToInt32(id));
+
+            Assert.IsTrue(ws.Name.Equals("hello workspace"));
+            Assert.IsTrue(ws.NextInvoice.Equals(1020));
+            Assert.IsTrue(ws.StorageContainer.Equals("this container"));
+        }
+
+        [TestMethod]
+        public async Task UpdateWithDictionary()
+        {
+            using var cn = LocalDb.GetConnection(DataContext.DbName);
+            var ws = await InsertWorkspace(cn, "an udpate test");
+
+            await cn.UpdateAsync("dbo.Workspace", new Dictionary<string, object>()
+            {
+                ["Name"] = "hello workspace",
+                ["NextInvoice"] = 1020,
+                ["StorageContainer"] = "this container",
+                ["Id"] = ws.Id
+            });
+
+            ws = await cn.GetAsync<Workspace, int>(ws.Id);
+
+            Assert.IsTrue(ws.Name.Equals("hello workspace"));
+            Assert.IsTrue(ws.NextInvoice.Equals(1020));
+            Assert.IsTrue(ws.StorageContainer.Equals("this container"));
         }
 
         private static async Task<Workspace> InsertWorkspace(SqlConnection cn, string name)

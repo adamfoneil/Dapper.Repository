@@ -11,11 +11,12 @@
     <RepositoryUrl>https://github.com/adamfoneil/Dapper.Repository</RepositoryUrl>
     <PackageTags>dapper sql-server crud repository-pattern</PackageTags>
     <Description>A Dapper-based repository library targeting SQL Server and .NET6</Description>
-    <Version>1.2.2</Version>
-    <PackageReleaseNotes>save and delete SQL logging</PackageReleaseNotes>
+    <Version>1.2.3</Version>
+    <PackageReleaseNotes>new Sql CRUD extension methods that accept dictionaries as arguments</PackageReleaseNotes>
     <Copyright>Copyright (c) 2021 Adam O'Neil</Copyright>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,6 +24,7 @@
     <Compile Include="..\Dapper.Repository\Exceptions\PermissionException.cs" Link="Exceptions\PermissionException.cs" />
     <Compile Include="..\Dapper.Repository\Exceptions\QueryException.cs" Link="Exceptions\QueryException.cs" />
     <Compile Include="..\Dapper.Repository\Extensions\CrudExtensions.cs" Link="Shared\CrudExtensions.cs" />
+    <Compile Include="..\Dapper.Repository\Extensions\CrudExtensions_Dictionary.cs" Link="Shared\CrudExtensions_Dictionary.cs" />
     <Compile Include="..\Dapper.Repository\Repository.cs" Link="Shared\Repository.cs" />
     <Compile Include="..\Dapper.Repository\Repository_virtuals.cs" Link="Shared\Repository_virtuals.cs" />
   </ItemGroup>
@@ -33,7 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AO.Models" Version="1.1.46" />
+    <PackageReference Include="AO.Models" Version="1.1.47" />
     <PackageReference Include="Dapper" Version="2.0.90" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="3.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="5.0.0" />
@@ -43,6 +45,10 @@
     <None Include="..\LICENSE">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
+    </None>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
 

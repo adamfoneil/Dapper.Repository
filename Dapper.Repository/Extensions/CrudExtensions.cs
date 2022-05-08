@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Dapper.Repository.Extensions
 {
-    internal static class CrudExtensionsBase
+    internal static partial class CrudExtensionsBase
     {
         public const string IdentityColumn = "Id";
 
