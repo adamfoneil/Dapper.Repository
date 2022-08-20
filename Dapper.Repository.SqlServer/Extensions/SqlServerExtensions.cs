@@ -19,6 +19,12 @@ namespace Dapper.Repository.SqlServer.Extensions
         public static async Task<TModel> GetWhereAsync<TModel>(this IDbConnection connection, object criteria, IDbTransaction txn = null) =>
             await CrudExtensionsBase.GetWhereAsync<TModel>(connection, criteria, StartDelimiter, EndDelimiter, txn);
 
+        public static async Task<bool> ExistsWhereAsync<TModel>(this IDbConnection connection, object criteria, IDbTransaction txn = null)
+        {
+            var result = await GetWhereAsync<TModel>(connection, criteria, txn);
+            return (result is not null);
+        }
+
         public static async Task<TModel> InsertAsync<TModel, TKey>(this IDbConnection connection, TModel model, IEnumerable<string> columnNames = null, string identityColumn = CrudExtensionsBase.IdentityColumn, Action<TModel, TKey> afterInsert = null, IDbTransaction txn = null) =>
             await CrudExtensionsBase.InsertAsync(connection, model, StartDelimiter, EndDelimiter, columnNames, identityColumn, "SELECT SCOPE_IDENTITY();", afterInsert, txn);
 

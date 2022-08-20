@@ -126,6 +126,17 @@ namespace Dapper.Repository.Test.Tests
         }
 
         [TestMethod]
+        public async Task ExistsWhere()
+        {
+            using var cn = LocalDb.GetConnection(DataContext.DbName);
+            await DeleteWhatevers(cn);
+
+            Workspace ws = await InsertWorkspace(cn, "whatever workspace3");
+            var exists = await cn.ExistsWhereAsync<Workspace>(new { name = "whatever workspace3" });
+            Assert.IsTrue(exists);
+        }
+
+        [TestMethod]
         public async Task Merge()
         {
             using var cn = LocalDb.GetConnection(DataContext.DbName);
