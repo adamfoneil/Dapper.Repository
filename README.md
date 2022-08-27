@@ -141,16 +141,22 @@ If you need an easy way to perform CRUD operations on model types without any in
  (this IDbConnection connection, TKey id, [ string identityColumn ], [ IDbTransaction txn ])
 - Task\<TModel\> [GetWhereAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions.cs#L19)
  (this IDbConnection connection, object criteria, [ IDbTransaction txn ])
-- Task\<TModel\> [InsertAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions.cs#L22)<TModel>
+- Task\<bool\> [ExistsWhereAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions.cs#L22)
+ (this IDbConnection connection, object criteria, [ IDbTransaction txn ])
+- Task\<TModel\> [InsertAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions.cs#L28)<TModel>
  (this IDbConnection connection, TModel model, [ IEnumerable<string> columnNames ], [ string identityColumn ], [ Action<TModel, TKey> afterInsert ], [ IDbTransaction txn ])
-- Task [UpdateAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions.cs#L25)<TModel>
+- Task [UpdateAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions.cs#L31)<TModel>
  (this IDbConnection connection, TModel model, [ IEnumerable<string> columnNames ], [ string identityColumn ], [ IDbTransaction txn ])
-- Task [DeleteAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions.cs#L28)<TKey>
+- Task [DeleteAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions.cs#L34)<TKey>
  (this IDbConnection connection, TKey id, [ string identityColumn ], [ string tableName ], [ IDbTransaction txn ])
-- Task\<TModel\> [SaveAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions.cs#L31)<TModel>
+- Task\<TModel\> [SaveAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions.cs#L37)<TModel>
  (this IDbConnection connection, TModel model, [ IEnumerable<string> columnNames ], [ string identityColumn ], [ IDbTransaction txn ])
-- Task\<TModel\> [MergeAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions.cs#L42)<TModel>
- (this IDbConnection connection, TModel model, [ Action<TModel, TModel> onExisting ], [ IDbTransaction txn ])
+- Task\<TModel\> [MergeAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions.cs#L48)<TModel>
+ (this IDbConnection connection, TModel model, [ Action<TModel> onExisting ], [ IDbTransaction txn ])
+- Task\<object\> [InsertAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions_Dictionary.cs#L11)
+ (this IDbConnection connection, string tableName, Dictionary<string, object> columnValues, [ IDbTransaction txn ])
+- Task [UpdateAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions_Dictionary.cs#L17)
+ (this IDbConnection connection, string tableName, Dictionary<string, object> columnValues, [ string identityColumn ], [ IDbTransaction txn ])
 
 ## Background
 I've been critical of the repository pattern in the past because I've seen it lead to verbosity and repeated code. But there's no inherent reason it has to be this way. I'm revisiting this now because my [Dapper.CX](https://github.com/adamfoneil/Dapper.CX) project has been getting complicated. Once again I'm feeling the need to get back to basics, rethink the dependency footprint and my approach to business logic.
