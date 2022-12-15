@@ -69,7 +69,7 @@ namespace Dapper.Repository.SqlServer.Extensions
                 }
                 catch (Exception exc)
                 {
-                    throw new QueryException(exc.Message, sql, parameters);
+                    throw new RepositoryException(exc.Message, sql, parameters);
                 }
             }
         }
