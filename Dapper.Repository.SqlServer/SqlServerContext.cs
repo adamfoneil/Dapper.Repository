@@ -1,5 +1,7 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using Dapper.Repository.Interfaces;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
 using System.Data;
 
 namespace Dapper.Repository.SqlServer
@@ -8,7 +10,7 @@ namespace Dapper.Repository.SqlServer
     {
         private readonly string _connectionString;
 
-        public SqlServerContext(string connectionString, ILogger logger) : base(logger)
+        public SqlServerContext(string connectionString, ILogger logger, IEnumerable<IErrorMessageHandler> messageHandlers = null) : base(logger, messageHandlers)
         {
             _connectionString = connectionString;
         }
