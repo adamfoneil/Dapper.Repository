@@ -58,12 +58,13 @@ namespace Dapper.Repository
             TKey result;
             try
             {
-                Logger.LogInformation($"{sql} with {model}");
+                Logger.LogDebug("{sql} with params {model}", sql, model);
                 result = await cn.QuerySingleOrDefaultAsync<TKey>(sql, model, txn);
             }
             catch (Exception exc)
             {
-                throw GetSqlException(exc, sql, model);
+                var message = await Context.MessageHandlers.GetErrorMessageAsync(cn, exc);
+                throw LogAndGetException(exc, message, sql, model);
             }
 
             if (action == SaveAction.Insert) SetIdentity(result, model);
@@ -89,13 +90,14 @@ namespace Dapper.Repository
             try
             {
                 var param = SqlIdDeleteParameter(model.Id) ?? SqlIdParameter(model.Id);
-                Logger.LogInformation($"{sql} with {param}");
+                Logger.LogInformation("{sql} with {param}", sql, param);
 
                 await cn.ExecuteAsync(sql, param, commandType: SqlDeleteCommandType, transaction: txn);
             }
             catch (Exception exc)
             {
-                throw GetSqlException(exc, sql, model);
+                var message = await Context.MessageHandlers.GetErrorMessageAsync(cn, exc);
+                throw LogAndGetException(exc, message, sql, model);
             }
 
             await AfterDeleteAsync(cn, model, txn);
@@ -122,17 +124,13 @@ namespace Dapper.Repository
 
         private SaveAction GetSaveAction(TModel model) => IsNew(model) ? SaveAction.Insert : SaveAction.Update;
 
-        private QueryException GetSqlException(Exception exception, string sql, object model, [CallerMemberName] string methodName = null)
+        private RepositoryException LogAndGetException(Exception innerException, string message, string sql, object model, [CallerMemberName] string methodName = null)
         {
-            Logger?.LogError(exception, JsonSerializer.Serialize(new
-            {
-                message = exception.Message,
-                sql = sql,
-                parameters = model,
-                methodName
-            }));
+            var result = new RepositoryException(message, sql, model, innerException);
+            
+            Logger?.LogError(result, message);
 
-            return new QueryException(exception.Message, sql, model);
+            return result;
         }
 
         private async Task<TModel> GetInnerAsync(string sql, object parameters, CommandType commandType, IDbTransaction txn = null)
@@ -145,11 +143,13 @@ namespace Dapper.Repository
 
             try
             {
+                Logger?.LogDebug("{sql} with {params}", sql, parameters);
                 result = await cn.QuerySingleOrDefaultAsync<TModel>(sql, parameters, commandType: commandType, transaction: txn);
             }
             catch (Exception exc)
             {
-                throw GetSqlException(exc, sql, parameters);                
+                var message = await Context.MessageHandlers.GetErrorMessageAsync(cn, exc);
+                throw LogAndGetException(exc, message, sql, parameters);                
             }
 
             var allow = await AllowGetAsync(cn, result, txn);

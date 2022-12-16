@@ -1,17 +1,22 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Dapper.Repository.Interfaces;
+using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Dapper.Repository
 {
     public abstract class DbContext<TUser>
-    {
-        public DbContext(ILogger logger)
+    {        
+        public DbContext(ILogger logger, IEnumerable<IErrorMessageHandler> messageHandlers = null)
         {
             Logger = logger;
+            MessageHandlers = messageHandlers ?? Enumerable.Empty<IErrorMessageHandler>();
         }
 
         public ILogger Logger { get; }
+        public IEnumerable<IErrorMessageHandler> MessageHandlers { get; }
         public TUser User { get; set; }
 
         public abstract IDbConnection GetConnection();
