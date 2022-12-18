@@ -134,6 +134,30 @@ A few points to note about the code above:
 - The cache access methods you see `GetItemAsync` and `SetItemAsync` are extensions you can find [here](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/Extensions/DistributedCacheExtensions.cs) that aren't part of the Dapper.Repository package proper.
 - The line `await new UserInfo() { UserName = userName }.ExecuteSingleOrDefaultAsync(connection)` executes a SQL query via a wrapper class `UserInfo`. This functionality comes from my [Dapper.QX](https://github.com/adamfoneil/Dapper.QX) library. The integration tests [here](https://github.com/adamfoneil/Dapper.Repository/tree/master/Dapper.Repository.Test/Queries) use this also.
 
+## Customizing Error Messages
+You can override default SQL Server messages by passing `IEnumerable<IMessageErrorHandler>` to the [SqlServerContext](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/SqlServerContext.cs#L13). There are two built-in [message handlers](https://github.com/adamfoneil/Dapper.Repository/tree/master/Dapper.Repository.SqlServer/MessageHandlers) for primary and foreign key errors, respectively. See the [IErrorMessageHandler](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/Interfaces/IErrorMessageHandler.cs) interface. Example usage:
+
+```csharp
+internal static IEnumerable<IErrorMessageHandler> DefaultMessageHandlers => new IErrorMessageHandler[]
+{
+    new ForeignKeyHandler((referencedTable, referencingTable) => $"Can't delete this row from the '{referencedTable}' table because at least one row in the '{referencingTable}' table depends on it."),
+    new PrimaryKeyHandler((value, table) => $"Can't save this row in the '{table}' table because the value '{value}' already exists and duplicates are not allowed.")
+};         
+```
+Then in the `SqlServerContext` constructor, pass `DefaultMessageHandlers`:
+
+```csharp
+public class DataContext : SqlServerContext<UserInfoResult>
+{
+        public DataContext(string connectionString, ILogger logger) : base(connectionString, logger, DefaultMessageHandlers)
+        {
+        }
+        
+        // a lot omitted for clarity
+}
+```
+If an error happens when executing a repository operation -- such as when [saving](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/Repository.cs#L66) or [deleting](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/Repository.cs#L99) -- your handlers will be searched for one that applies to the current exception, and its message used with the thrown exception.
+
 ## Classic Extension Methods
 If you need an easy way to perform CRUD operations on model types without any intermediary business logic, there are some "classic" [extension methods](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions.cs) for this. Most of these do not require `IModel` except for `SaveAsync`:
 
