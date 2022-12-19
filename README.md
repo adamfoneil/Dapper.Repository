@@ -156,7 +156,7 @@ public class DataContext : SqlServerContext<UserInfoResult>
         // a lot omitted for clarity
 }
 ```
-If an error happens when executing a repository operation -- such as when [saving](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/Repository.cs#L66) or [deleting](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/Repository.cs#L99) -- your handlers will be searched for one that applies to the current exception, and its message used with the thrown exception.
+If an error happens when executing a repository operation -- such as when [saving](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/Repository.cs#L66) or [deleting](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/Repository.cs#L99) -- your handlers will be [searched](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/Extensions/ErrorMessageHandlerExtensions.cs#L11) for one that applies to the current exception, and its message used with the thrown exception.
 
 ## Classic Extension Methods
 If you need an easy way to perform CRUD operations on model types without any intermediary business logic, there are some "classic" [extension methods](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/Extensions/SqlServerExtensions.cs) for this. Most of these do not require `IModel` except for `SaveAsync`:
