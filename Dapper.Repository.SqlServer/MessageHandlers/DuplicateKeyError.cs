@@ -1,4 +1,5 @@
-﻿using Dapper.Repository.Interfaces;
+﻿using AO.Models.Enums;
+using Dapper.Repository.Interfaces;
 using Microsoft.Data.SqlClient;
 using System;
 using System.Data;
@@ -10,16 +11,17 @@ namespace Dapper.Repository.MessageHandlers
     /// <summary>
     /// works for primary key and unique constraints
     /// </summary>
-    public class PrimaryKeyHandler : IErrorMessageHandler
+    public class DuplicateKeyError : IErrorMessageHandler
     {
         private readonly Func<string, string, string> _messageBuilder;
 
-        public PrimaryKeyHandler(Func<string, string, string> messageBuilder)
+        public DuplicateKeyError(Func<string, string, string> messageBuilder)
         {
             _messageBuilder = messageBuilder;
         }
 
-        public bool Filter(Exception exception) => (exception is SqlException sqlException) ? sqlException.Number == 2627 : false;
+        public bool Filter(SaveAction action, Exception exception) => (exception is SqlException sqlException) ? 
+            sqlException.Number == 2627 && action == SaveAction.Insert : false;
         
         public async Task<string> GetMessageAsync(IDbConnection connection, Exception exception)
         {

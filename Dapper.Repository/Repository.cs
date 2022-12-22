@@ -63,7 +63,7 @@ namespace Dapper.Repository
             }
             catch (Exception exc)
             {
-                var message = await Context.MessageHandlers.GetErrorMessageAsync(cn, exc);
+                var message = await Context.MessageHandlers.GetErrorMessageAsync(cn, action, exc);
                 throw LogAndGetException(exc, message, sql, model);
             }
 
@@ -96,7 +96,7 @@ namespace Dapper.Repository
             }
             catch (Exception exc)
             {
-                var message = await Context.MessageHandlers.GetErrorMessageAsync(cn, exc);
+                var message = await Context.MessageHandlers.GetErrorMessageAsync(cn, SaveAction.Delete, exc);
                 throw LogAndGetException(exc, message, sql, model);
             }
 
@@ -148,7 +148,7 @@ namespace Dapper.Repository
             }
             catch (Exception exc)
             {
-                var message = await Context.MessageHandlers.GetErrorMessageAsync(cn, exc);
+                var message = await Context.MessageHandlers.GetErrorMessageAsync(cn, SaveAction.None, exc);
                 throw LogAndGetException(exc, message, sql, parameters);                
             }
 
