@@ -11,6 +11,8 @@ namespace Dapper.Repository.SqlServer.MessageHandlers
     {
         private readonly Func<string, string, string> _messageBuilder;
 
+        protected const int FKError = 547;
+
         public ForeignKeyError(Func<string, string, string> messageBuilder)
         {
             _messageBuilder = messageBuilder;
