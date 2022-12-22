@@ -116,8 +116,8 @@ namespace Dapper.Repository.Test.Tests
 
         private static IEnumerable<IErrorMessageHandler> DefaultHandlers => new IErrorMessageHandler[]
         {
-            new ForeignKeyHandler((referencedTable, referencingTable) => $"Can't delete '{referencedTable}' row because at least one '{referencingTable}' row is depending on it."),
-            new PrimaryKeyHandler((value, tableName) => $"Can't save this row because the value '{value}' is already in use in table '{tableName}'.")
+            new DeleteCascadeBlocked((referencedTable, referencingTable) => $"Can't delete '{referencedTable}' row because at least one '{referencingTable}' row is depending on it."),
+            new DuplicateKeyError((value, tableName) => $"Can't save this row because the value '{value}' is already in use in table '{tableName}'.")
         };
 
         public SampleContext(ILogger<SampleContext> logger) : base(LocalDb.GetConnectionString(DbName), logger, DefaultHandlers)

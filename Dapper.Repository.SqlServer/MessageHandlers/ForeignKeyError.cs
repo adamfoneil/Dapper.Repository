@@ -1,28 +1,28 @@
-﻿using Dapper.Repository.Interfaces;
-using Microsoft.Data.SqlClient;
+﻿using AO.Models.Enums;
+using Dapper.Repository.Interfaces;
 using System;
 using System.Data;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Dapper.Repository.MessageHandlers
+namespace Dapper.Repository.SqlServer.MessageHandlers
 {
-    public class ForeignKeyHandler : IErrorMessageHandler
+    public abstract class ForeignKeyError : IErrorMessageHandler
     {
         private readonly Func<string, string, string> _messageBuilder;
 
-        public ForeignKeyHandler(Func<string, string, string> messageBuilder)
+        public ForeignKeyError(Func<string, string, string> messageBuilder)
         {
             _messageBuilder = messageBuilder;
         }
 
-        public bool Filter(Exception exception) => (exception is SqlException sqlEx) ? sqlEx.Number == 547 : false;
-
+        public abstract bool Filter(SaveAction action, Exception exception);
+        
         public async Task<string> GetMessageAsync(IDbConnection connection, Exception exception)
         {
             var fkName = ParseFKName(exception.Message);
             var fkInfo = await GetFKInfoAsync(connection, fkName);
-            return _messageBuilder.Invoke(fkInfo.ReferencedTable, fkInfo.ReferencingTable);            
+            return _messageBuilder.Invoke(fkInfo.ReferencedTable, fkInfo.ReferencingTable);
         }
 
         private async Task<(string ReferencingTable, string ReferencedTable)> GetFKInfoAsync(IDbConnection connection, string fkName) =>

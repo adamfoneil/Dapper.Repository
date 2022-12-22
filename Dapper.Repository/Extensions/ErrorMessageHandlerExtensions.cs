@@ -1,4 +1,5 @@
-﻿using Dapper.Repository.Interfaces;
+﻿using AO.Models.Enums;
+using Dapper.Repository.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -8,11 +9,11 @@ namespace Dapper.Repository.Extensions
 {
     public static class ErrorMessageHandlerExtensions
     {
-        public static async Task<string> GetErrorMessageAsync(this IEnumerable<IErrorMessageHandler> handlers, IDbConnection connection, Exception exception)
+        public static async Task<string> GetErrorMessageAsync(this IEnumerable<IErrorMessageHandler> handlers, IDbConnection connection, SaveAction action, Exception exception)
         {
             foreach (var item in handlers)
             {
-                if (item.Filter(exception))
+                if (item.Filter(action, exception))
                 {
                     return await item.GetMessageAsync(connection, exception);
                 }
