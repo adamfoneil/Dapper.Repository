@@ -139,13 +139,14 @@ A few points to note about the code above:
 - The line `await new UserInfo() { UserName = userName }.ExecuteSingleOrDefaultAsync(connection)` executes a SQL query via a wrapper class `UserInfo`. This functionality comes from my [Dapper.QX](https://github.com/adamfoneil/Dapper.QX) library. The integration tests [here](https://github.com/adamfoneil/Dapper.Repository/tree/master/Dapper.Repository.Test/Queries) use this also.
 
 ## Customizing Error Messages
-You can override default SQL Server messages by passing `IEnumerable<IMessageErrorHandler>` to the [SqlServerContext](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/SqlServerContext.cs#L13). There are two built-in [message handlers](https://github.com/adamfoneil/Dapper.Repository/tree/master/Dapper.Repository.SqlServer/MessageHandlers) for primary and foreign key errors, respectively. See the [IErrorMessageHandler](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/Interfaces/IErrorMessageHandler.cs) interface. Example usage:
+You can override default SQL Server messages by passing `IEnumerable<IMessageErrorHandler>` to the [SqlServerContext](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/SqlServerContext.cs#L13). There are three built-in [message handlers](https://github.com/adamfoneil/Dapper.Repository/tree/master/Dapper.Repository.SqlServer/MessageHandlers) for primary and foreign key errors, respectively. See the [IErrorMessageHandler](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/Interfaces/IErrorMessageHandler.cs) interface. Example usage:
 
 ```csharp
 internal static IEnumerable<IErrorMessageHandler> DefaultMessageHandlers => new IErrorMessageHandler[]
 {
-    new ForeignKeyHandler((referencedTable, referencingTable) => $"Can't delete this row from the '{referencedTable}' table because at least one row in the '{referencingTable}' table depends on it."),
-    new PrimaryKeyHandler((value, table) => $"Can't save this row in the '{table}' table because the value '{value}' already exists and duplicates are not allowed.")
+    new DeleteCascadeBlocked((referencedTable, referencingTable) => $"Can't delete this row from the '{referencedTable}' table because at least one row in the '{referencingTable}' table depends on it."),
+    new InvalidForeignKeySave((referencedTable, referencingTable) => $"Can't save this '{referencingTable}' row because it has a missing or invalid referenced to the '{referencedTable}' table."),
+    new DuplicateKeyError((value, table) => $"Can't save this row in the '{table}' table because the value '{value}' already exists and duplicates are not allowed.")
 };         
 ```
 Then in the `SqlServerContext` constructor, pass `DefaultMessageHandlers`:
