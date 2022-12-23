@@ -12,7 +12,7 @@
     <PackageTags>dapper sql-server crud repository-pattern</PackageTags>
     <Description>A Dapper-based repository library targeting SQL Server and .NET6</Description>
     <Version>1.3.2</Version>
-    <PackageReleaseNotes>https://github.com/adamfoneil/Dapper.Repository/issues/13</PackageReleaseNotes>
+    <PackageReleaseNotes>https://github.com/adamfoneil/Dapper.Repository/issues/14</PackageReleaseNotes>
     <Copyright>Copyright (c) 2021 Adam O'Neil</Copyright>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
