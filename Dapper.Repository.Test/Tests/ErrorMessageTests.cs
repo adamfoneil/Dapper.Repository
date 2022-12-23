@@ -3,6 +3,7 @@ using Dapper.Repository.Exceptions;
 using Dapper.Repository.Interfaces;
 using Dapper.Repository.MessageHandlers;
 using Dapper.Repository.SqlServer;
+using Dapper.Repository.SqlServer.MessageHandlers;
 using Dapper.Repository.Test.Extensions;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
@@ -10,6 +11,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SqlServer.LocalDb;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using static Dapper.Repository.Test.Tests.SampleContext;
 
@@ -84,7 +86,33 @@ namespace Dapper.Repository.Test.Tests
                 var repoExc = exc as RepositoryException;
                 Assert.IsNotNull(repoExc);
             }
+        }
 
+        [TestMethod]
+        public async Task InsertFKError()
+        {
+            using var cn = LocalDb.GetConnection(DbName);
+            await CreateObjectsAsync(cn);
+
+            var logger = LoggerFactory
+                .Create(config => config.AddConsole())
+                .CreateLogger<SampleContext>();
+
+            var ctx = new SampleContext(logger);
+
+            await ctx.Categories.SaveAsync(new Category() { Name = "Whatever" });                        
+
+            try
+            {
+                await ctx.Items.SaveAsync(new Item() { CategoryId = 0, Name = "this" });
+            }
+            catch (Exception exc)
+            {
+                Assert.IsTrue(exc.Message.Equals("Can't save the 'Item' row because of a missing or unrecognized value in the 'CategoryId' field(s)."));
+
+                var repoExc = exc as RepositoryException;
+                Assert.IsNotNull(repoExc);
+            }
         }
 
         private async Task CreateObjectsAsync(SqlConnection cn)
@@ -116,7 +144,8 @@ namespace Dapper.Repository.Test.Tests
 
         private static IEnumerable<IErrorMessageHandler> DefaultHandlers => new IErrorMessageHandler[]
         {
-            new DeleteCascadeBlocked((referencedTable, referencingTable) => $"Can't delete '{referencedTable}' row because at least one '{referencingTable}' row is depending on it."),
+            new DeleteCascadeBlocked((info) => $"Can't delete '{info.ReferencedTable}' row because at least one '{info.ReferencingTable}' row is depending on it."),
+            new InvalidForeignKeyValue((info) => $"Can't save the '{info.ReferencingTable}' row because of a missing or unrecognized value in the '{string.Join(", ", info.Columns.Select(col => col.ReferencingName))}' field(s)."),
             new DuplicateKeyError((value, tableName) => $"Can't save this row because the value '{value}' is already in use in table '{tableName}'.")
         };
 

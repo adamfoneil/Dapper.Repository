@@ -7,7 +7,7 @@ namespace Dapper.Repository.MessageHandlers
 {
     public class DeleteCascadeBlocked : ForeignKeyError
     {
-        public DeleteCascadeBlocked(Func<string, string, string> messageBuilder) : base(messageBuilder)
+        public DeleteCascadeBlocked(Func<Info, string> messageBuilder) : base(messageBuilder)
         {
         }
 

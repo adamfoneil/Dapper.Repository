@@ -1,6 +1,7 @@
 ﻿using AO.Models.Enums;
 using Dapper.Repository.Interfaces;
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -9,11 +10,11 @@ namespace Dapper.Repository.SqlServer.MessageHandlers
 {
     public abstract class ForeignKeyError : IErrorMessageHandler
     {
-        private readonly Func<string, string, string> _messageBuilder;
+        private readonly Func<Info, string> _messageBuilder;
 
         protected const int FKError = 547;
 
-        public ForeignKeyError(Func<string, string, string> messageBuilder)
+        public ForeignKeyError(Func<Info, string> messageBuilder)
         {
             _messageBuilder = messageBuilder;
         }
@@ -24,19 +25,45 @@ namespace Dapper.Repository.SqlServer.MessageHandlers
         {
             var fkName = ParseFKName(exception.Message);
             var fkInfo = await GetFKInfoAsync(connection, fkName);
-            return _messageBuilder.Invoke(fkInfo.ReferencedTable, fkInfo.ReferencingTable);
+            return _messageBuilder.Invoke(fkInfo);
         }
 
-        private async Task<(string ReferencingTable, string ReferencedTable)> GetFKInfoAsync(IDbConnection connection, string fkName) =>
-            await connection.QuerySingleAsync<(string ReferencingName, string ReferencedName)>(
+        private async Task<Info> GetFKInfoAsync(IDbConnection connection, string fkName)
+        {
+            var tables = await connection.QuerySingleAsync<(int ObjectId, string ReferencingName, string ReferencedName)>(
                 @"SELECT 
-	                [referencing].[name] AS [ReferencingName], [referenced].[name] AS [ReferencedName]
+	                [fk].[object_id], [referencing].[name] AS [ReferencingName], [referenced].[name] AS [ReferencedName]
                 FROM 
 	                [sys].[foreign_keys] [fk]
 	                INNER JOIN [sys].[objects] [referencing] ON [fk].[parent_object_id]=[referencing].[object_id]
 	                INNER JOIN [sys].[objects] [referenced] ON [fk].[referenced_object_id]=[referenced].[object_id]
                 WHERE 
 	                [fk].[name]=@fkName", new { fkName });
+
+            var columns = await connection.QueryAsync<(string ReferencedName, string ReferencingName)>(
+                @"SELECT	                    
+                    [ref_col].[name] AS [ReferencedName],				
+                    [child_col].[name] AS [ReferencingName]					
+				FROM
+					[sys].[foreign_key_columns] [fkcol]
+					INNER JOIN [sys].[tables] [child_t] ON [fkcol].[parent_object_id]=[child_t].[object_id]
+					INNER JOIN [sys].[columns] [child_col] ON
+						[child_t].[object_id]=[child_col].[object_id] AND
+						[fkcol].[parent_column_id]=[child_col].[column_id]
+					INNER JOIN [sys].[tables] [ref_t] ON [fkcol].[referenced_object_id]=[ref_t].[object_id]
+					INNER JOIN [sys].[columns] [ref_col] ON
+						[ref_t].[object_id]=[ref_col].[object_id] AND
+						[fkcol].[referenced_column_id]=[ref_col].[column_id]
+                WHERE
+                    [fkcol].[constraint_object_id]=@objectId", new { objectId = tables.ObjectId });
+
+            return new Info()
+            {
+                ReferencedTable = tables.ReferencedName,
+                ReferencingTable = tables.ReferencingName,
+                Columns = columns
+            };
+        }            
 
         private string ParseFKName(string message)
         {
@@ -45,6 +72,22 @@ namespace Dapper.Repository.SqlServer.MessageHandlers
             if (match.Groups.Count > 0) return match.Groups[1].Value;
 
             throw new Exception($"Couldn't parse the FK name from message: {message}");
+        }
+
+        public class Info
+        {
+            /// <summary>
+            /// parent or primary table
+            /// </summary>
+            public string ReferencedTable { get; init; }
+            /// <summary>
+            /// child or foreign key table
+            /// </summary>
+            public string ReferencingTable { get; init; }
+            /// <summary>
+            /// related columns
+            /// </summary>
+            public IEnumerable<(string ReferencedName, string ReferencingName)> Columns { get; init; }
         }
     }
 }
