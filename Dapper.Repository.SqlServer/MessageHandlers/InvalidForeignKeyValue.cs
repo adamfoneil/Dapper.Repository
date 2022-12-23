@@ -4,9 +4,9 @@ using System;
 
 namespace Dapper.Repository.SqlServer.MessageHandlers
 {
-    public class InvalidForeignKeySave : ForeignKeyError
+    public class InvalidForeignKeyValue : ForeignKeyError
     {
-        public InvalidForeignKeySave(Func<string, string, string> messageBuilder) : base(messageBuilder)
+        public InvalidForeignKeyValue(Func<Info, string> messageBuilder) : base(messageBuilder)
         {
         }
 
