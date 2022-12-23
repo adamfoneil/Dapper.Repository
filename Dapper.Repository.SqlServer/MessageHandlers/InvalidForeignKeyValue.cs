@@ -10,8 +10,7 @@ namespace Dapper.Repository.SqlServer.MessageHandlers
         {
         }
 
-        public override bool Filter(SaveAction action, Exception exception) => 
-            (exception is SqlException sqlEx) ?
-                sqlEx.Number == FKError && (action == SaveAction.Insert || action == SaveAction.Update) : false;
+        public override bool Filter(SaveAction action, Exception exception) =>
+            IsFKError(exception) && (action == SaveAction.Insert || action == SaveAction.Update);
     }
 }

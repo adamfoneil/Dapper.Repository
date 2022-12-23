@@ -1,5 +1,6 @@
 ﻿using AO.Models.Enums;
 using Dapper.Repository.Interfaces;
+using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -12,7 +13,7 @@ namespace Dapper.Repository.SqlServer.MessageHandlers
     {
         private readonly Func<Info, string> _messageBuilder;
 
-        protected const int FKError = 547;
+        protected const int ConstraintError = 547;
 
         public ForeignKeyError(Func<Info, string> messageBuilder)
         {
@@ -20,6 +21,10 @@ namespace Dapper.Repository.SqlServer.MessageHandlers
         }
 
         public abstract bool Filter(SaveAction action, Exception exception);
+        
+        protected static bool IsFKError(Exception exception) => 
+            (exception is SqlException sqlExc) ?
+                sqlExc.Number == ConstraintError && (sqlExc.Message.Contains("REFERENCE constraint") || sqlExc.Message.Contains("FOREIGN KEY constraint")) : false;
         
         public async Task<string> GetMessageAsync(IDbConnection connection, Exception exception)
         {

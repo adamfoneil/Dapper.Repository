@@ -1,6 +1,5 @@
 ﻿using AO.Models.Enums;
 using Dapper.Repository.SqlServer.MessageHandlers;
-using Microsoft.Data.SqlClient;
 using System;
 
 namespace Dapper.Repository.MessageHandlers
@@ -11,8 +10,6 @@ namespace Dapper.Repository.MessageHandlers
         {
         }
 
-        public override bool Filter(SaveAction action, Exception exception) => 
-            (exception is SqlException sqlEx) ?
-                sqlEx.Number == FKError && action == SaveAction.Delete : false;
+        public override bool Filter(SaveAction action, Exception exception) => IsFKError(exception) && action == SaveAction.Delete;
     }
 }
