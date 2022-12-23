@@ -142,23 +142,24 @@ A few points to note about the code above:
 You can override default SQL Server messages by passing `IEnumerable<IMessageErrorHandler>` to the [SqlServerContext](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.SqlServer/SqlServerContext.cs#L13). There are three built-in [message handlers](https://github.com/adamfoneil/Dapper.Repository/tree/master/Dapper.Repository.SqlServer/MessageHandlers) for primary and foreign key errors, respectively. See the [IErrorMessageHandler](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/Interfaces/IErrorMessageHandler.cs) interface. Example usage:
 
 ```csharp
-internal static IEnumerable<IErrorMessageHandler> DefaultMessageHandlers => new IErrorMessageHandler[]
+internal static IEnumerable<IErrorMessageHandler> DefaultHandlers => new IErrorMessageHandler[]
 {
-    new DeleteCascadeBlocked((referencedTable, referencingTable) => $"Can't delete this row from the '{referencedTable}' table because at least one row in the '{referencingTable}' table depends on it."),
-    new InvalidForeignKeySave((referencedTable, referencingTable) => $"Can't save this '{referencingTable}' row because it has a missing or invalid referenced to the '{referencedTable}' table."),
-    new DuplicateKeyError((value, table) => $"Can't save this row in the '{table}' table because the value '{value}' already exists and duplicates are not allowed.")
-};         
+    new DeleteCascadeBlocked((info) => $"Can't delete '{info.ReferencedTable}' row because at least one '{info.ReferencingTable}' row is depending on it."),
+    new InvalidForeignKeyValue((info) => $"Can't save the '{info.ReferencingTable}' row because of a missing or unrecognized value in the '{string.Join(", ", info.Columns.Select(col => col.ReferencingName))}' field(s)."),
+    new DuplicateKeyError((value, tableName) => $"Can't save this row because the value '{value}' is already in use in table '{tableName}'.")
+};
 ```
+
 Then in the `SqlServerContext` constructor, pass `DefaultMessageHandlers`:
 
 ```csharp
 public class DataContext : SqlServerContext<UserInfoResult>
 {
-        public DataContext(string connectionString, ILogger logger) : base(connectionString, logger, DefaultMessageHandlers)
-        {
-        }
-        
-        // a lot omitted for clarity
+    public DataContext(string connectionString, ILogger logger) : base(connectionString, logger, DefaultMessageHandlers)
+    {
+    }
+
+    // a lot omitted for clarity
 }
 ```
 If an error happens when executing a repository operation -- such as when [saving](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/Repository.cs#L66) or [deleting](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/Repository.cs#L99) -- your handlers will be [searched](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/Extensions/ErrorMessageHandlerExtensions.cs#L11) for one that applies to the current exception, and its message used with the thrown exception.
