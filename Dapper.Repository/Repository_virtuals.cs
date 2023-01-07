@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Dapper.Repository
 {
-    public partial class Repository<TUser, TModel, TKey>
+    public partial class Repository<TContext, TUser, TModel, TKey>
     {
         protected virtual string SqlGet { get; }
 

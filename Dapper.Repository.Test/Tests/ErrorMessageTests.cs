@@ -162,7 +162,7 @@ namespace Dapper.Repository.Test.Tests
         }
     }
 
-    public class BaseRepository<TModel> : Repository<SampleUser, TModel, int> where TModel : IModel<int>
+    public class BaseRepository<TModel> : Repository<SqlServerContext<SampleUser>, SampleUser, TModel, int> where TModel : IModel<int>
     {
         public BaseRepository(SampleContext context) : base(context)
         {
