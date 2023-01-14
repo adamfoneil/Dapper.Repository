@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Dapper.Repository.Test.Repositories
 {
-    public class BaseRepository<TModel> : Repository<UserInfoResult, TModel, int> where TModel : IModel<int>
+    public class BaseRepository<TModel> : Repository<SqlServerContext<UserInfoResult>, UserInfoResult, TModel, int> where TModel : IModel<int>
     {
         public BaseRepository(SqlServerContext<UserInfoResult> context) : base(context)
         {

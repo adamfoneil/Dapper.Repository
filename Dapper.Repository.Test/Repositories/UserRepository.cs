@@ -9,7 +9,7 @@ namespace Dapper.Repository.Test.Repositories
     /// Some workarounds needed because dbo.AspNetUsers.Id is a string.
     /// Note that you can't do regular crud operations on this table
     /// </summary>
-    public class UserRepository : Repository<UserInfoResult, UserProfile, string>
+    public class UserRepository : Repository<SqlServerContext<UserInfoResult>, UserInfoResult, UserProfile, string>
     {
         public UserRepository(SqlServerContext<UserInfoResult> context) : base(context)
         {

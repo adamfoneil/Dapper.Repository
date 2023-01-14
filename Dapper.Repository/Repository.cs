@@ -9,17 +9,18 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Dapper.Repository
 {
-    public partial class Repository<TUser, TModel, TKey> where TModel : IModel<TKey>
+    public partial class Repository<TContext, TUser, TModel, TKey> 
+        where TModel : IModel<TKey>
+        where TContext : DbContext<TUser>
     {
-        protected readonly DbContext<TUser> Context;
+        protected readonly TContext Context;
         protected readonly ILogger Logger;
 
-        public Repository(DbContext<TUser> context)
+        public Repository(TContext context)
         {
             Context = context;
             Logger = context.Logger;
