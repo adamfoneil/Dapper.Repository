@@ -11,7 +11,7 @@ namespace Dapper.Repository
     {        
         public DbContext(ILogger logger, IEnumerable<IErrorMessageHandler> messageHandlers = null)
         {
-            Logger = logger;
+            Logger = logger;                        
             MessageHandlers = messageHandlers ?? Enumerable.Empty<IErrorMessageHandler>();
         }
 
