@@ -61,6 +61,8 @@ Most applications will have authentication and need to track database operations
 
 The test project uses [DataContext](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/Contexts/DataContext.cs) where `TUser` is [UserInfoResult](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/Queries/UserInfo.cs#L10). Notice how the `QueryUserAsync` [override](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/Contexts/DataContext.cs#L39) checks in a cache for the user, then queries the database if it's not found. This is how you achieve efficient, typed user profile access in your applications.
 
+See the topic on Auditing next to see how this can be leveraged.
+
 ## Audit Tracking
 - For information on capturing the user name and timestamps of row inserts and updates, see the Wiki topic [Shallow Auditing](https://github.com/adamfoneil/Dapper.Repository/wiki/Shallow-Auditing)
 - For information on capturing all row changes over time, see the Wiki topic [Deep Auditing](https://github.com/adamfoneil/Dapper.Repository/wiki/Deep-Auditing)
