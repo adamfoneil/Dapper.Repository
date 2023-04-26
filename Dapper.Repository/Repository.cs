@@ -85,7 +85,7 @@ namespace Dapper.Repository
         {
             await Context.GetUserAsync();
 
-            var cn = Context.GetConnection();
+            using var cn = Context.GetConnection();
             
             var allow = await AllowDeleteAsync(cn, model, txn);
             if (!allow.result) throw new PermissionException($"Delete permission was denied: {allow.message}");
@@ -146,7 +146,7 @@ namespace Dapper.Repository
         {
             await Context.GetUserAsync();
 
-            var cn = Context.GetConnection();
+            using var cn = Context.GetConnection();
             
             TModel result;
             
