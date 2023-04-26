@@ -63,7 +63,7 @@ namespace Dapper.Repository.Test.Tests
 
         private DataContext GetContext()
         {
-            var logger = LoggerFactory.Create(config => config.AddDebug()).CreateLogger("Testing");
+            var logger = LoggerFactory.Create(config => config.AddConsole().SetMinimumLevel(LogLevel.Trace)).CreateLogger("Testing");
             
             return new DataContext(UserName, GetCache(), logger);
         }

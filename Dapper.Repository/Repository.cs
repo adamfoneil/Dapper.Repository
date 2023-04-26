@@ -8,7 +8,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
+using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Dapper.Repository
@@ -24,21 +27,21 @@ namespace Dapper.Repository
         {
             Context = context;
             Logger = context.Logger;
-        }        
+        }
 
-        public async virtual Task<TModel> GetAsync(TKey id, IDbTransaction txn = null)
+        public async virtual Task<TModel> GetAsync(TKey id, IDbTransaction txn = null, [CallerMemberName]string methodName = null)
         {
             var sql = SqlGet ?? SqlBuilder.Get<TModel>(Context.StartDelimiter, Context.EndDelimiter);
-            return await GetInnerAsync(sql, SqlIdParameter(id), SqlGetCommandType, txn);
+            return await GetInnerAsync(sql, SqlIdParameter(id), SqlGetCommandType, methodName, txn);
         }
 
-        public async virtual Task<TModel> GetWhereAsync(object criteria, IDbTransaction txn = null)
+        public async virtual Task<TModel> GetWhereAsync(object criteria, IDbTransaction txn = null, [CallerMemberName]string methodName = null)
         {
             var sql = SqlGetWhere ?? SqlBuilder.GetWhere<TModel>(criteria, Context.StartDelimiter, Context.EndDelimiter);
-            return await GetInnerAsync(sql, criteria, SqlGetWhereCommandType, txn);
+            return await GetInnerAsync(sql, criteria, SqlGetWhereCommandType, methodName, txn);
         }
 
-        public async virtual Task<TModel> SaveAsync(TModel model, IEnumerable<string> columnNames = null, IDbTransaction txn = null)
+        public async virtual Task<TModel> SaveAsync(TModel model, IEnumerable<string> columnNames = null, IDbTransaction txn = null, [CallerMemberName]string methodName = null)
         {
             await Context.GetUserAsync();
 
@@ -59,8 +62,15 @@ namespace Dapper.Repository
             TKey result;
             try
             {
-                Logger.LogDebug("{sql} with params {model}", sql, model);
+                if (Logger.IsEnabled(LogLevel.Trace))
+                {
+                    Logger.LogTrace("{methodName}:\r\n{sql}", methodName, sql);
+                    Logger.LogTrace("{methodName}: params {model}", methodName, JsonSerializer.Serialize(model));
+                }
+                
+                var sw = Stopwatch.StartNew();
                 result = await cn.QuerySingleOrDefaultAsync<TKey>(sql, model, txn);
+                LogElapsed(methodName, sw);
             }
             catch (Exception exc)
             {
@@ -75,11 +85,11 @@ namespace Dapper.Repository
             return model;
         }
 
-        public async virtual Task DeleteAsync(TModel model, IDbTransaction txn = null)
+        public async virtual Task DeleteAsync(TModel model, IDbTransaction txn = null, [CallerMemberName]string methodName = null)
         {
             await Context.GetUserAsync();
 
-            var cn = Context.GetConnection();
+            using var cn = Context.GetConnection();
             
             var allow = await AllowDeleteAsync(cn, model, txn);
             if (!allow.result) throw new PermissionException($"Delete permission was denied: {allow.message}");
@@ -91,9 +101,11 @@ namespace Dapper.Repository
             try
             {
                 var param = SqlIdDeleteParameter(model.Id) ?? SqlIdParameter(model.Id);
-                Logger.LogInformation("{sql} with {param}", sql, param);
+                Logger.LogTrace("{methodName}:\r\n{sql} with {param}", methodName, sql, param);
 
+                var sw = Stopwatch.StartNew();
                 await cn.ExecuteAsync(sql, param, commandType: SqlDeleteCommandType, transaction: txn);
+                LogElapsed(methodName, sw);
             }
             catch (Exception exc)
             {
@@ -104,13 +116,13 @@ namespace Dapper.Repository
             await AfterDeleteAsync(cn, model, txn);
         }
 
-        public async virtual Task<TModel> MergeAsync(TModel model, Action<TModel, TModel> onExisting = null, IDbTransaction txn = null)
+        public async virtual Task<TModel> MergeAsync(TModel model, Action<TModel, TModel> onExisting = null, IDbTransaction txn = null, [CallerMemberName]string methodName = null)
         {
             TModel existing;
             if (IsNew(model))
             {
                 var sql = CrudExtensionsBase.BuildMergeGetCommand(model, Context.StartDelimiter, Context.EndDelimiter);
-                existing = await GetInnerAsync(sql, model, CommandType.Text, txn);
+                existing = await GetInnerAsync(sql, model, CommandType.Text, methodName, txn);
                 if (existing != null)
                 {
                     model.Id = existing.Id;
@@ -125,27 +137,39 @@ namespace Dapper.Repository
 
         private SaveAction GetSaveAction(TModel model) => IsNew(model) ? SaveAction.Insert : SaveAction.Update;
 
-        private RepositoryException LogAndGetException(Exception innerException, string message, string sql, object model, [CallerMemberName] string methodName = null)
+        private RepositoryException LogAndGetException(Exception innerException, string message, string sql, object model)
         {
+            var appendInfo = new[]
+            {
+                ("repository-class", GetType().Name),
+                ("additional-info", AdditionalLogData)
+            };
+
+            message += $" [ {string.Join(", ", appendInfo.Where(item => !string.IsNullOrEmpty(item.Item2)).Select(item => "{" + item.Item1 + "}"))} ]";
             var result = new RepositoryException(message, sql, model, innerException);
-            
-            Logger?.LogError(result, message);
+
+            var append = appendInfo.Where(item => !string.IsNullOrEmpty(item.Item2)).ToArray();
+            Logger?.LogError(result, message, append);
 
             return result;
         }
 
-        private async Task<TModel> GetInnerAsync(string sql, object parameters, CommandType commandType, IDbTransaction txn = null)
+        private async Task<TModel> GetInnerAsync(string sql, object parameters, CommandType commandType, string methodName, IDbTransaction txn = null)
         {
             await Context.GetUserAsync();
 
-            var cn = Context.GetConnection();
+            using var cn = Context.GetConnection();
             
             TModel result;
+            
+            var sw = Stopwatch.StartNew();
 
             try
             {
-                Logger?.LogDebug("{sql} with {params}", sql, parameters);
+                Logger.LogTrace("{methodName}:\r\n{sql} with {params}", methodName, sql, parameters);
                 result = await cn.QuerySingleOrDefaultAsync<TModel>(sql, parameters, commandType: commandType, transaction: txn);
+
+                LogElapsed(methodName, sw);
             }
             catch (Exception exc)
             {
@@ -162,6 +186,12 @@ namespace Dapper.Repository
             }            
 
             return result;
+        }
+
+        private void LogElapsed(string methodName, Stopwatch sw)
+        {
+            sw.Stop();
+            Logger.LogTrace("{methodName}: elapsed {elapsed}", methodName, sw.Elapsed);
         }
     }
 }
