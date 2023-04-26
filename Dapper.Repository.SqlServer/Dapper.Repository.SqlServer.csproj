@@ -11,7 +11,7 @@
     <RepositoryUrl>https://github.com/adamfoneil/Dapper.Repository</RepositoryUrl>
     <PackageTags>dapper sql-server crud repository-pattern</PackageTags>
     <Description>A Dapper-based repository library targeting SQL Server and .NET6</Description>
-    <Version>1.4.0</Version>
+    <Version>1.4.1-alpha</Version>
     <PackageReleaseNotes>https://github.com/adamfoneil/Dapper.Repository/issues/15 - breaking change</PackageReleaseNotes>
     <Copyright>Copyright (c) 2021 Adam O'Neil</Copyright>
     <IncludeSymbols>true</IncludeSymbols>
