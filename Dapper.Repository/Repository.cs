@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -61,8 +62,11 @@ namespace Dapper.Repository
             TKey result;
             try
             {
-                Logger.LogTrace("{methodName}:\r\n{sql}", methodName, sql);
-                if (Logger.IsEnabled(LogLevel.Trace)) Logger.LogTrace("{methodName}: params {model}", methodName, JsonSerializer.Serialize(model));
+                if (Logger.IsEnabled(LogLevel.Trace))
+                {
+                    Logger.LogTrace("{methodName}:\r\n{sql}", methodName, sql);
+                    Logger.LogTrace("{methodName}: params {model}", methodName, JsonSerializer.Serialize(model));
+                }
                 
                 var sw = Stopwatch.StartNew();
                 result = await cn.QuerySingleOrDefaultAsync<TKey>(sql, model, txn);
@@ -135,9 +139,17 @@ namespace Dapper.Repository
 
         private RepositoryException LogAndGetException(Exception innerException, string message, string sql, object model)
         {
+            var appendInfo = new[]
+            {
+                ("repository-class", GetType().Name),
+                ("additional-info", AdditionalLogData)
+            };
+
+            message += $" [ {string.Join(", ", appendInfo.Where(item => !string.IsNullOrEmpty(item.Item2)).Select(item => "{" + item.Item1 + "}"))} ]";
             var result = new RepositoryException(message, sql, model, innerException);
-            
-            Logger?.LogError(result, message);
+
+            var append = appendInfo.Where(item => !string.IsNullOrEmpty(item.Item2)).ToArray();
+            Logger?.LogError(result, message, append);
 
             return result;
         }

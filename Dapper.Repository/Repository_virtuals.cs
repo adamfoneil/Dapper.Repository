@@ -63,5 +63,7 @@ namespace Dapper.Repository
         protected async virtual Task AfterDeleteAsync(IDbConnection connection, TModel model, IDbTransaction txn = null) => await Task.CompletedTask;
 
         protected virtual void SetIdentity(TKey id, TModel model) => model.Id = id;
+
+        protected virtual string AdditionalLogData => string.Empty;
     }
 }
