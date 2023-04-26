@@ -133,7 +133,7 @@ namespace Dapper.Repository
 
         private SaveAction GetSaveAction(TModel model) => IsNew(model) ? SaveAction.Insert : SaveAction.Update;
 
-        private RepositoryException LogAndGetException(Exception innerException, string message, string sql, object model, [CallerMemberName] string methodName = null)
+        private RepositoryException LogAndGetException(Exception innerException, string message, string sql, object model)
         {
             var result = new RepositoryException(message, sql, model, innerException);
             
