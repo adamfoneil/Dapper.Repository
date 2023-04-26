@@ -57,9 +57,11 @@ services.AddScoped((sp) =>
 Since you create your own `DataContext` object, you can decide what dependencies are useful to pass to it. The `AuthenticationStateProvider` is used to get the current user name during `QueryUserInfo`. The `IDistributedCache` is used to avoid a database roundtrip to get user details, used [here](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/Contexts/DataContext.cs#L44). The `ILogger` is required by the low-level [DbContext](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/DbContext.cs#L9) object. This is so SQL errors have a place to be [logged consistently](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/Repository.cs#L125).
 
 ## Working With TUser
-Most applications will have authentication and need to track database operations by user in some way. When you create your `DbContext` object, you must provide a `TUser` that represents the current user. You also override the [QueryUserAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/DbContext.cs#L48) method, implementing any database query and/or cache access that makes sense in your application.
+Most applications will have authentication and need to track database operations by user in some way. When you create your `DbContext` object, you must provide a `TUser` that represents the current user. You also override the [QueryUserAsync](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository/DbContext.cs#L53) method, implementing any database query and/or cache access that makes sense in your application.
 
 The test project uses [DataContext](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/Contexts/DataContext.cs) where `TUser` is [UserInfoResult](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/Queries/UserInfo.cs#L10). Notice how the `QueryUserAsync` [override](https://github.com/adamfoneil/Dapper.Repository/blob/master/Dapper.Repository.Test/Contexts/DataContext.cs#L39) checks in a cache for the user, then queries the database if it's not found. This is how you achieve efficient, typed user profile access in your applications.
+
+See the topic on Auditing next to see how this can be leveraged.
 
 ## Audit Tracking
 - For information on capturing the user name and timestamps of row inserts and updates, see the Wiki topic [Shallow Auditing](https://github.com/adamfoneil/Dapper.Repository/wiki/Shallow-Auditing)
