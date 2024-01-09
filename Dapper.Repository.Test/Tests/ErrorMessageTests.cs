@@ -46,7 +46,7 @@ namespace Dapper.Repository.Test.Tests
             }
             catch (Exception exc)
             {
-                Assert.IsTrue(exc.Message.Equals("Can't save this row because the value 'hello' is already in use in table 'dbo.Category'. [ {repository-class} ]"));
+                Assert.IsTrue(exc.Message.Equals("Can't save this row because the value 'hello' is already in use in table 'dbo.Category'."));
 
                 var repoExc = exc as RepositoryException;
                 Assert.IsNotNull(repoExc);
@@ -81,7 +81,7 @@ namespace Dapper.Repository.Test.Tests
             }
             catch (Exception exc)
             {
-                Assert.IsTrue(exc.Message.Equals("Can't delete 'Category' row because at least one 'Item' row is depending on it. [ {repository-class} ]"));
+                Assert.IsTrue(exc.Message.Equals("Can't delete 'Category' row because at least one 'Item' row is depending on it."));
 
                 var repoExc = exc as RepositoryException;
                 Assert.IsNotNull(repoExc);
@@ -108,7 +108,7 @@ namespace Dapper.Repository.Test.Tests
             }
             catch (Exception exc)
             {
-                Assert.IsTrue(exc.Message.Equals("Can't save the 'Item' row because of a missing or unrecognized value in the 'CategoryId' field(s). [ {repository-class} ]"));
+                Assert.IsTrue(exc.Message.Equals("Can't save the 'Item' row because of a missing or unrecognized value in the 'CategoryId' field(s)."));
 
                 var repoExc = exc as RepositoryException;
                 Assert.IsNotNull(repoExc);

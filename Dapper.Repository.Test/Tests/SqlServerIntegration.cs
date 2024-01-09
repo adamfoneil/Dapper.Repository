@@ -25,17 +25,16 @@ namespace Dapper.Repository.Test.Tests
 
         public static async Task BuildLocalDatabase()
         {
-            using (var cn = LocalDb.GetConnection(Contexts.DataContext.DbName))
-            {
-                var sample = new Client(); // jiggles the reference collection
-                var assembly = Assembly.GetExecutingAssembly().GetReferencedAssembly("Dapper.Repository.Test.Models");
-                var types = assembly.GetExportedTypes().Where(t => t.Namespace.Equals("BlazorAO.Models")).ToArray();
-                await cn.DropAllTablesAsync();
-                DataModel.CreateTablesAsync(types, cn).Wait();
+            using var cn = LocalDb.GetConnection(DataContext.DbName);
+            var sample = new Client(); // jiggles the reference collection
+            var assembly = Assembly.GetExecutingAssembly().GetReferencedAssembly("Dapper.Repository.Test.Models");
+            var types = assembly.GetExportedTypes().Where(t => t.Namespace.Equals("BlazorAO.Models")).ToArray();
+            await cn.DropAllTablesAsync();
+            DataModel.CreateTablesAsync(types, cn).Wait();
 
-                // help from https://www.learmoreseekmore.com/2020/04/net-core-distributed-sql-server-cache.html
-                await cn.ExecuteAsync(
-                    @"CREATE TABLE [dbo].[Cache] (
+            // help from https://www.learmoreseekmore.com/2020/04/net-core-distributed-sql-server-cache.html
+            await cn.ExecuteAsync(
+                @"CREATE TABLE [dbo].[Cache] (
                         [Id] NVARCHAR(900) NOT NULL PRIMARY KEY, 
                         [Value] VARBINARY(MAX) NOT NULL, 
                         [ExpiresAtTime] DATETIMEOFFSET NOT NULL, 
@@ -43,20 +42,19 @@ namespace Dapper.Repository.Test.Tests
                         [AbsoluteExpiration] DATETIMEOFFSET NULL
                     )");
 
-                await cn.InsertAsync<UserProfile, int>(new UserProfile()
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    UserName = "adamo",
-                    Email = "adamosoftware@gmail.com",
-                    TimeZoneId = "Eastern Standard Time",
-                    FirstName = "Adam",
-                    LastName = "O'Neil"
-                }, new[]
-                {
+            await cn.InsertAsync<UserProfile, int>(new UserProfile()
+            {
+                Id = Guid.NewGuid().ToString(),
+                UserName = "adamo",
+                Email = "adamosoftware@gmail.com",
+                TimeZoneId = "Eastern Standard Time",
+                FirstName = "Adam",
+                LastName = "O'Neil"
+            }, new[]
+            {
                     "Id", "UserName", "Email", "TimeZoneId", "FirstName", "LastName",
                     "EmailConfirmed", "PhoneNumberConfirmed", "TwoFactorEnabled"
                 });
-            }
         }
 
         private const string UserName = "adamo";
