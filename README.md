@@ -1,3 +1,7 @@
+Note -- I've sort of stopped updating this, and have pivoted to [Dapper.Entities](https://github.com/adamfoneil/Dapper.Entities), which is a bit simpler and incoprorates some lessons learned from this project.
+
+---
+
 [![Build Status](https://ci.appveyor.com/api/projects/status/3opr5fvqudspcioh?svg=true)](https://ci.appveyor.com/project/adamosoftware/dapper-repository)
 [![Nuget](https://img.shields.io/nuget/v/AO.Dapper.Repository.SqlServer)](https://www.nuget.org/packages/AO.Dapper.Repository.SqlServer/)
 
