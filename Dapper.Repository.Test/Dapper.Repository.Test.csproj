@@ -11,7 +11,7 @@
     <PackageReference Include="Dapper.QX" Version="1.0.25" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="6.0.12" />
     <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="6.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="6.0.2" />
     <PackageReference Include="Microsoft.Extensions.Caching.SqlServer" Version="6.0.12" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="6.0.0" />
